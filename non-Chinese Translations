@@ -1,0 +1,1166 @@
+local parentName = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]
+if (parentName["TehrsRaidCDs"] == nil) then parentName["TehrsRaidCDs"] = {} end	
+if (parentName["TehrsRaidCDs"]["Translation Settings"] == nil) then parentName["TehrsRaidCDs"]["Translation Settings"] = {} end
+
+local TehrsCDs = parentName["TehrsRaidCDs"]["Translation Settings"]
+if (TehrsCDs["frFR"] == nil) then TehrsCDs["frFR"] = {} end
+if (TehrsCDs["deDE"] == nil) then TehrsCDs["deDE"] = {} end
+if (TehrsCDs["ruRU"] == nil) then TehrsCDs["ruRU"] = {} end
+if (TehrsCDs["koKR"] == nil) then TehrsCDs["koKR"] = {} end
+if (TehrsCDs["esES"] == nil) then TehrsCDs["esES"] = {} end
+if (TehrsCDs["itIT"] == nil) then TehrsCDs["itIT"] = {} end
+
+
+------------------------------------------------------
+----   Enable only ONE of the following options   ----
+------------------------------------------------------
+
+
+	TehrsCDs["koKR"].Translation_Korean = false
+	
+	TehrsCDs["frFR"].Translation_French = false
+	
+	TehrsCDs["deDE"].Translation_German = false
+	
+	TehrsCDs["esES"].Translation_Spanish = false
+	
+	TehrsCDs["ruRU"].Translation_Russian = false
+	
+	TehrsCDs["itIT"].Translation_Italian = false
+
+
+---------------------------------------
+----   Basic Translation Outline   ----
+---------------------------------------
+	
+	
+	-- https://pastebin.com/raw/XEV1uSEu
+	
+	
+------------------------------------------------
+----   Do not change any of the following   ----
+------------------------------------------------	
+	
+
+if TehrsCDs["koKR"].Translation_Korean then
+	TehrsCDs["koKR"].Translation_Korean_titles = {
+		"외생기",
+		"공생기",
+		"유틸기",
+		"무적기",
+		"군중제어기",
+		"차단기술",
+		"전부",
+		"전투부활 타이머"
+	}
+
+	TehrsCDs["koKR"].Translation_Korean_buttonText = {    
+		["Cancel"] = "취소",
+		["print1"] = " 레이드",
+		["printEnabled"] = "활성화",
+		["printDisabled"] = "비활성화",
+		["allCDs"] = "모든 재사용 대기시간",
+		["resetSuccess"] = "초기화가 성공적으로 완료되었습니다",
+		["L1N1"] = "설정",
+		["L1N2"] = "보이기",
+		["L1N3"] = "슬라이더 보이기",
+		["L1N4"] = "일반 필드 표현방식 설정",
+		["L1N8"] = "재사용 대기시간 확인",
+		--["L1N9"] = "Sort CDs by Time",
+		["L1N10"] = "Show Empty Groups",
+		["L1N11"] = "Show Only On Cooldown",		
+		["L2N1.1"] = "전역 설정",
+		["L2N2.1"] = "모두 보기",
+		["L2N3.1"] = "외생기 쿨다운 보기",
+		["L2N4.1"] = "공생기 쿨다운 보기",
+		["L2N5.1"] = "유틸기 쿨다운 보기",
+		["L2N6.1"] = "무적기 쿨다운 보기",
+		["L2N7.1"] = "군중제어 쿨다운 보기",
+		["L2N8.1"] = "차단 쿨다운 보기",
+		["L2N9.1"] = "전부 쿨다운 보기",
+		["L1N5"] = "레이드 내 표현방식 설정",
+		["L2N1.2"] = "레이드 설정",
+		["L2N2.2"] = "모두 보기",
+		["L2N3.2"] = "외생기 쿨다운 보기",
+		["L2N4.2"] = "공생기 쿨다운 보기",
+		["L2N5.2"] = "유틸기 쿨다운 보기",
+		["L2N6.2"] = "무적기 쿨다운 보기",
+		["L2N7.2"] = "군중제어 쿨다운 보기",
+		["L2N8.2"] = "차단 쿨다운 보기",
+		["L2N9.2"] = "전부 쿨다운 보기",
+		["L2N10.2"] = "윤회 쿨다운 보기",
+		["L2N11.2"] = "전투부활 타이머 보기",
+		["L1N6"] = "재사용 대기시간 초기화",
+		["L2N1.3"] = "재사용 대기시간 초기화",
+		["L2N2.3"] = "모든 쿨다운 초기화",
+		["L2N3.3"] = "외생기 쿨다운 초기화",
+		["L2N4.3"] = "공생기 쿨다운 초기화",
+		["L2N5.3"] = "유틸기 쿨다운 초기화",
+		["L2N6.3"] = "무적기 쿨다운 초기화",
+		["L2N7.3"] = "군중제어 쿨다운 초기화",
+		["L2N8.3"] = "차단 쿨다운 초기화",
+		["L2N9.3"] = "전투부활 쿨다운 초기화",
+		["L1N7"] = "내 쿨다운 보기",
+		["L2N1.4"] = "내 쿨다운 보기",
+		["L2N2.4"] = "유틸기 |cFFF58CBA보축|r",
+		["L2N3.4"] = "외생기",
+		["L2N4.4"] = "공생기",
+		["L2N5.4"] = "유틸기",
+		["L2N6.4"] = "무적기",
+		["L2N7.4"] = "군중제어기",
+		["L2N8.4"] = "차단기술",
+		["L2N9.4"] = "전부",
+		["L2N10.4"] = "윤회",
+		["L2N11.4"] = "전투부활 타이머"
+	}
+
+	TehrsCDs["koKR"].Translation_Korean_abilityNames = {     
+		--Immunities
+		["Turtle"] = "거북상",
+		["Turtle+"] = "거북상+",
+		["Cloak"] = "그망",
+		["Block"] = "얼방",
+		["Block+"] = "얼방+",
+		["Netherwalk"] = "황천걸음",
+		["Bubble"] = "천상의 보호막",
+		["Bubble+"] = "천상의 보호막+",
+		
+		--Crowd Control
+		["Cap Totem"] = "축전토템",
+		["Cap Totem+"] = "축전토템+",
+		["Shadowfury"] = "어격",
+		["Shadowfury+"] = "어격+",		
+		["Infernal"] = "지옥불정령 소환",
+		["Binding"] = "구속사격",
+		["Sweep"] = "팽차",
+		["Sweep+"] = "팽차+",
+		["Ursol"] = "우르속",
+		["Typhoon"] = "태풍",
+		["Mind Bomb"] = "정폭",
+		["Stomp"] = "발구르기",
+		["Shockwave"] = "충격파",
+		["Shockwave+"] = "충격파+",
+		["Nova"] = "혼돈의 회오리",
+		["Nova+"] = "혼돈의 회오리+",
+		["Grasp"] = "고핀",
+		["Grasp+"] = "고핀+",
+		["Chains"] = "사슬의 인장",
+		["Thunderstorm"] = "천폭",
+		["Ring"] = "평고",
+		["Shining"] = "빛힘",			
+		
+		--Interrupts
+		["Kick"] = "발차기",
+		["Pummel"] = "들이치기",
+		["S-Bash"] = "두개골",
+		["M-Freeze"] = "정신 얼리기",
+		["Disrupt"] = "마삼",
+		["Rebuke"] = "비난",
+		["W-Shear"] = "날바",
+		["S-Strike"] = "손날찌르기",
+		["Muzzle"] = "재갈",
+		["C-Shot"] = "반격사격",
+		["C-Spell"] = "마차",
+		["Spell Lock"] = "주문 잠금",
+		["S-Beam"] ="태광",
+		--["Torrent"] = "비격", Arcane Torrent isn't an interrupt anymore! Holding onto this until I add dispels.
+		["Silence"] = "침묵",
+		["Silence+"] = "침묵+",
+		["S-Silence"] = "침묵의 인장",
+		["S-Silence+"] = "침묵의 인장+",
+		
+		--Battle Rezzes
+		["Ankh"] = "윤회",
+		["Raise Ally"] = "아군 되살리기",
+		["Soulstone"] = "영석",
+		["Rebirth"] = "환생",
+		["Pet Rez"] = "펫전부",
+		
+		--Utility CDs
+		["Tricks"] = "속거",
+		["Misdirect"] = "눈속+",
+		["Roar"] = "쇄포",
+		["Hope"] = "희망의 상징",
+		["Innervate"] = "자극",
+		["Grip"] = "도약",
+		["Wind Rush"] = "바질토템",
+		["Treants"] = "자군",	
+		
+		--Raid CDs
+		["Aura-M"] = "오숙",
+		["Aegis"] = "아이기스",
+		["VE"] = "흡선",
+		["VE+"] = "흡선+",
+		["Darkness"] = "어둠",
+		["A-Prot"] = "선보토",
+		["D-Hymn"] = "천찬",
+		["Tranq"] = "평온",
+		["Tranq+"] = "평온+",
+		["AG"] = "고인",
+		["R-Cry"] = "지휘",
+		["H-Tide"] = "치해토",
+		["Barrier"] = "방벽",
+		["Barrier+"] = "방벽+",
+		["SLT"] = "정고",
+		["Revival"] = "재활",
+		["Wings"] = "응격",		
+		["Wings+"] = "응격+",		
+		
+		--Externals
+		["Sac"] = "희축",
+		["G-Spirit"] = "수호",
+		["G-Spirit+"] = "수호+",
+		["Safeguard"] = "수비대장",
+		["I-Bark"] = "무껍",
+		["I-Bark+"] = "무껍+",
+		["I-Bark+ "] = "무껍+ ",
+		["P-Sup"] = "고억",
+		["P-Sup+"] = "고억+",
+		["L-Cocoon"] = "고치",
+		["BoP"] = "보축",
+		["LoH"] = "신축",
+		["LoH+"] = "신축+",
+		["Spellward"] = "주축"
+	}   
+else
+	TehrsCDs["koKR"].Translation_Korean_abilityNames = { } 
+	TehrsCDs["koKR"].Translation_Korean_buttonText = { }
+	TehrsCDs["koKR"].Translation_Korean_titles = { } 
+end
+
+
+if TehrsCDs["frFR"].Translation_French then
+	TehrsCDs["frFR"].Translation_French_titles = {
+		"Externes",
+		"CDs Raid",
+		"CDs Utiles",
+		"Immunités",
+		"Contrôle de Foule",
+		"Interruptions",
+		"Rez Combat",
+		"Battle Rez Counter"
+	}
+
+	TehrsCDs["frFR"].Translation_French_buttonText = {
+		["Cancel"] = "Fermer",
+		["print1"] = " en Raid",
+		["printEnabled"] = "ACTIVES",
+		["printDisabled"] = "DESACTIVES",
+		["allCDs"] = "Tous les CDs",
+		["resetSuccess"] = "Reset",
+		["L1N1"] = "Réglages",
+		["L1N2"] = "Afficher/Masquer",
+		["L1N3"] = "Afficher/Masquer Sliders",
+		["L1N4"] = "Réglages Généraux",
+		["L1N8"] = "Vérifier les CDs",
+		--["L1N9"] = "Sort CDs by Time",
+		["L1N10"] = "Show Empty Groups",
+		["L1N11"] = "Show Only On Cooldown",		
+		["L2N1.1"] = "Réglages Généraux",
+		["L2N2.1"] = "Afficher Tous",
+		["L2N3.1"] = "Afficher/Masquer Externes",
+		["L2N4.1"] = "Afficher/Masquer CDs Raid",
+		["L2N5.1"] = "Afficher/Masquer CDs Utiles",
+		["L2N6.1"] = "Afficher/Masquer Immunités",
+		["L2N7.1"] = "Afficher/Masquer Contrôle de Foule",
+		["L2N8.1"] = "Afficher/Masquer Interruptions",
+		["L2N9.1"] = "Afficher/Masquer Rez Combat",
+		["L1N5"] = "Réglage Raid",
+		["L2N1.2"] = "Réglage Raid",
+		["L2N3.2"] = "Afficher/Masquer Externes",
+		["L2N4.2"] = "Afficher/Masquer CDs Raid",
+		["L2N5.2"] = "Afficher/Masquer CDs Utiles",
+		["L2N6.2"] = "Afficher/Masquer Immunités",
+		["L2N7.2"] = "Afficher/Masquer Contrôle de Foule",
+		["L2N8.2"] = "Afficher/Masquer Interruptions",
+		["L2N9.2"] = "Afficher/Masquer Rez Combat",
+		["L2N10.2"] = "Afficher/Masquer Ankh",
+		["L2N11.2"] = "Afficher/Masquer Timer Rez Combat",
+		["L1N6"] = "Reset Cooldowns",
+		["L2N1.3"] = "Reset Cooldowns",
+		["L2N2.3"] = "Reset Tous les CDs",
+		["L2N3.3"] = "Reset Externes",
+		["L2N4.3"] = "Reset CDs Raid",
+		["L2N5.3"] = "Reset CDs Utiles",
+		["L2N6.3"] = "Reset Immunités",
+		["L2N7.3"] = "Reset Contrôle de Foule",
+		["L2N8.3"] = "Reset Interruptions",
+		["L2N9.3"] = "Reset Rez Combat",
+		["L1N7"] = "Afficher/Masquer CDs Individuels",
+		["L2N1.4"] = "Afficher/Masquer CDs Individuels",
+		["L2N2.4"] = "|cFFF58CBABoP|r Utile",
+		["L2N3.4"] = "Externes",
+		["L2N4.4"] = "CDs Raid",
+		["L2N5.4"] = "CDs Utiles",
+		["L2N6.4"] = "Immunités",
+		["L2N7.4"] = "Contrôle de Foule",
+		["L2N8.4"] = "Interruptions",
+		["L2N9.4"] = "Rez Combat",
+		["L2N10.4"] = "Ankh",
+		["L2N11.4"] = "Timer Rez Combat"	
+	}		
+
+	TehrsCDs["frFR"].Translation_French_abilityNames = {
+		--Immunities
+		["Turtle"] = "Tortue",
+		["Turtle+"] = "Tortue+",
+		["Cloak"] = "Cape",
+		["Block"] = "Block",
+		["Block+"] = "Block+",
+		["Netherwalk"] = "Netherwalk",
+		["Bubble"] = "Bubulle",
+		["Bubble+"] = "Bubulle+",
+		
+		--Crowd Control
+		["Cap Totem"] = "Cap Totem",
+		["Cap Totem+"] = "Cap Totem+",
+		["Shadowfury"] = "Furie",
+		["Shadowfury+"] = "Furie+",
+		["Infernal"] = "Infernal",
+		["Binding"] = "Tir de lien",
+		["Sweep"] = "Balayement",
+		["Sweep+"] = "Balayement+",
+		["Ursol"] = "Vortex",
+		["Typhoon"] = "Typhon",
+		["Mind Bomb"] = "Mind Bomb",
+		["Stomp"] = "Choc martial",
+		["Shockwave"] = "Shockwave",
+		["Shockwave+"] = "Shockwave+",
+		["Nova"] = "Nova",
+		["Nova+"] = "Nova+",
+		["Grasp"] = "Mass Grab",
+		["Grasp+"] = "Mass Grab+",
+		["Chains"] = "S-Chaînes",
+		["Thunderstorm"] = "Orage",
+		["Ring"] = "Anneau",
+		["Shining"] = "Rayonnante",			
+		
+		--Interrupts
+		["Kick"] = "Kick",
+		["Pummel"] = "Volée",
+		["S-Bash"] = "S-Bash",
+		["M-Freeze"] = "Gel",
+		["Disrupt"] = "Consumer",
+		["Rebuke"] = "Réprimande",
+		["W-Shear"] = "Cisaille",
+		["S-Strike"] = "S-Strike",
+		["Muzzle"] = "Muselière",
+		["C-Shot"] = "Riposte",
+		["C-Spell"] = "Contresort",
+		["Spell Lock"] = "Verrou",
+		["S-Beam"] = "Rayon",
+		--["Torrent"] = "Torrent", Arcane Torrent isn't an interrupt anymore! Holding onto this until I add dispels.
+		["Silence"] = "Silence",
+		["Silence+"] = "Silence+",
+		["S-Silence"] = "S-Silence",
+		["S-Silence+"] = "S-Silence+",
+		
+		--Battle Rezzes
+		["Ankh"] = "Ankh",
+		["Raise Ally"] = "RB DK",
+		["Soulstone"] = "RB Démo",
+		["Rebirth"] = "RB Druide",
+		["Pet Rez"] = "RB Chasseur",
+		
+		--Utility CDs
+		["Tricks"] = "Ficelles",
+		["Misdirect"] = "Détourn+",
+		["Roar"] = "Ruée",
+		["Hope"] = "Hope",
+		["Innervate"] = "Innerv",
+		["Grip"] = "Grab",
+		["Wind Rush"] = "Wind Rush",
+		["Treants"] = "Tréants",	
+		
+		--Raid CDs
+		["Aura-M"] = "A-Mastery",
+		["Aegis"] = "Egide",
+		["VE"] = "Entreinte",
+		["VE+"] = "Entreinte+",
+		["Darkness"] = "Ténèbres",
+		["A-Prot"] = "Toto protec",
+		["D-Hymn"] = "Hymne",
+		["Tranq"] = "Tranq",
+		["Tranq+"] = "Tranq+",
+		["AG"] = "SA",
+		["R-Cry"] = "Cri",
+		["H-Tide"] = "Marée de soin",
+		["Barrier"] = "Barrière",
+		["Barrier+"] = "Barrière+",
+		["SLT"] = "Lien d'esprit",
+		["Revival"] = "Regain",
+		["Wings"] = "Ailes",	
+		["Wings+"] = "Ailes+",
+		
+		--Externals
+		["Sac"] = "BoS",
+		["G-Spirit"] = "Gardien",
+		["G-Spirit+"] = "Gardien+",
+		["Safeguard"] = "Protéger",
+		["I-Bark"] = "Ecorce",
+		["I-Bark+"] = "Ecorce+",
+		["I-Bark+ "] = "Ecorce+ ",
+		["P-Sup"] = "Supp",
+		["P-Sup+"] = "Supp+",
+		["L-Cocoon"] = "Cocon",
+		["BoP"] = "BoP",
+		["LoH"] = "Imposition",
+		["LoH+"] = "Imposition+",
+		["Spellward"] = "BoPS"
+	}
+else
+	TehrsCDs["frFR"].Translation_French_abilityNames = { } 
+	TehrsCDs["frFR"].Translation_French_buttonText = { }
+	TehrsCDs["frFR"].Translation_French_titles = { } 
+end
+
+
+if TehrsCDs["deDE"].Translation_German then
+	TehrsCDs["deDE"].Translation_German_titles = {
+		"Externe",
+		"Raid CDs",
+		"Nützliche CDs",
+		"Immunitäten",
+		"AoE CC",
+		"Unterbrechungen",
+		"BR",
+		"BR Timer" 
+	}
+
+	TehrsCDs["deDE"].Translation_German_buttonText = {
+		["Cancel"] = "Abbrechen",
+		["print1"] = " in Raid",
+		["printEnabled"] = "AKTIVIERT",
+		["printDisabled"] = "DEAKTIVIERT",
+		["allCDs"] = "Alle CDs",
+		["resetSuccess"] = "Erfolgreich zurückgesetzt",
+		["L1N1"] = "Einstellungen",
+		["L1N2"] = "Anzeige umschalten",
+		["L1N3"] = "Schieberegler umschalten",
+		["L1N4"] = "Allgemeine Sichtbarkeitseinstellungen",
+		["L1N8"] = "CDs überprüfen",
+		--["L1N9"] = "Sort CDs by Time",
+		["L1N10"] = "Show Empty Groups",
+		["L1N11"] = "Show Only On Cooldown",		
+		["L2N1.1"] = "Allgemeine Einstellungen",
+		["L2N2.1"] = "Alle anzeigen",
+		["L2N3.1"] = "Externe CDs umschalten",
+		["L2N4.1"] = "Raid CDs umschalten",
+		["L2N5.1"] = "Nützliche CDs umschalten",
+		["L2N6.1"] = "Immunitäten umschalten",
+		["L2N7.1"] = "CC umschalten",
+		["L2N8.1"] = "Unterbrechungen umschalten",
+		["L2N9.1"] = "BR umschalten",
+		["L1N5"] = "Raid Sichtbarkeitseinstellungen",
+		["L2N1.2"] = "Raid Einstellungen",
+		["L2N2.2"] = "Alle anzeigen",
+		["L2N3.2"] = "Externe CDs umschalten",
+		["L2N4.2"] = "Raid CDs umschalten",
+		["L2N5.2"] = "Nützliche CDs umschalten",
+		["L2N6.2"] = "Immunitäten umschalten",
+		["L2N7.2"] = "CC umschalten",
+		["L2N8.2"] = "Unterbrechungen umschalten",
+		["L2N9.2"] = "BR umschalten",
+		["L2N10.2"] = "Ankh umschalten",
+		["L2N11.2"] = "BR Timer umschalten",
+		["L1N6"] = "Cooldowns aktualisieren",
+		["L2N1.3"] = "Cooldowns aktualisieren",
+		["L2N2.3"] = "Alle CDs zurücksetzen",
+		["L2N3.3"] = "Externe CDs zurücksetzen",
+		["L2N4.3"] = "Raid CDs zurücksetzen",
+		["L2N5.3"] = "Nützliche CDs zurücksetzen",
+		["L2N6.3"] = "Immunitäten zurücksetzen",
+		["L2N7.3"] = "CC zurücksetzen",
+		["L2N8.3"] = "Unterbrechungen zurücksetzen",
+		["L2N9.3"] = "BR zurücksetzen",
+		["L1N7"] = "Zeige individuelle CDs",
+		["L2N1.4"] = "Zeige individuelle CDs",
+		["L2N2.4"] = "Nützliche |cFFF58CBABoP|r",
+		["L2N3.4"] = "Externe",
+		["L2N4.4"] = "Raid CDs",
+		["L2N5.4"] = "Nützliche CDs",
+		["L2N6.4"] = "Immunitäten",
+		["L2N7.4"] = "AoE CC",
+		["L2N8.4"] = "Unterbrechungen",
+		["L2N9.4"] = "BR",
+		["L2N10.4"] = "Ankh",
+		["L2N11.4"] = "BR Timer"
+	}
+
+	TehrsCDs["deDE"].Translation_German_abilityNames = {
+		--Immunities
+		["Turtle"] = "Turtle",
+		["Turtle+"] = "Turtle+",
+		["Cloak"] = "Mantel",
+		["Block"] = "Eisblock",
+		["Block+"] = "Eisblock+",
+		["Netherwalk"] = "Netherwalk",
+		["Bubble"] = "Bubble",
+		["Bubble+"] = "Bubble+",
+		
+		--Crowd Control
+		["Cap Totem"] = "Blitzwoge",
+		["Cap Totem+"] = "Blitzwoge+",
+		["Shadowfury"] = "Schattenfuror",
+		["Shadowfury+"] = "Schattenfuror+",
+		["Infernal"] = "Infernal",
+		["Binding"] = "B-Schuss",
+		["Sweep"] = "Fußfeger",
+		["Sweep+"] = "Fußfeger+",
+		["Ursol"] = "Vortex",
+		["Typhoon"] = "Taifun",
+		["Mind Bomb"] = "Mind Bomb",
+		["Stomp"] = "Stampfen",
+		["Shockwave"] = "Schockwelle",
+		["Shockwave+"] = "Schockwelle+",
+		["Nova"] = "Nova",
+		["Nova+"] = "Nova+",
+		["Grasp"] = "Grasp",
+		["Grasp+"] = "Grasp+",
+		["Chains"] = "Z-Ketten",
+		["Thunderstorm"] = "Gewitter",
+		["Ring"] = "Ring",
+		["Shining"] = "Strahlend",			
+		
+		--Interrupts
+		["Kick"] = "Kick",
+		["Pummel"] = "Zuschlagen",
+		["S-Bash"] = "Schädelstoß",
+		["M-Freeze"] = "G-Frost",
+		["Disrupt"] = "Disrupt",
+		["Rebuke"] = "Rebuke",
+		["W-Shear"] = "Windstoß",
+		["S-Strike"] = "SH-Stoß",
+		["Muzzle"] = "Maulkorb",
+		["C-Shot"] = "G-Schuss",
+		["C-Spell"] = "Gegenzauber",
+		["Spell Lock"] = "Zaubersperre",
+		["S-Beam"] = "Sonnenstrahl",
+		--["Torrent"] = "Torrent", Arcane Torrent isn't an interrupt anymore! Holding onto this until I add dispels.
+		["Silence"] = "Stille",
+		["Silence+"] = "Stille+",
+		["S-Silence"] = "Z-Stille",
+		["S-Silence+"] = "Z-Stille+",
+		
+		--Battle Rezzes
+		["Ankh"] = "Ankh",
+		["Raise Ally"] = "BR DK",
+		["Soulstone"] = "Seelenstein",
+		["Rebirth"] = "BR Druide",
+		["Pet Rez"] = "BR Jäger",
+		
+		--Utility CDs
+		["Tricks"] = "Tricks",
+		["Misdirect"] = "Irreführung",
+		["Roar"] = "Gebrüll",
+		["Hope"] = "Hoffnung",
+		["Innervate"] = "Anregen",
+		["Grip"] = "Grip",
+		["Wind Rush"] = "Windsturm",
+		["Treants"] = "Treants",	
+		
+		--Raid CDs
+		["Aura-M"] = "Aurenmastery",
+		["Aegis"] = "Aegis",
+		["VE"] = "Vampir",
+		["VE+"] = "Vampir+",
+		["Darkness"] = "Dunkelheit",
+		["A-Prot"] = "SdA",
+		["D-Hymn"] = "G-Hymne",
+		["Tranq"] = "Gelassenheit",
+		["Tranq+"] = "Gelassenheit+",
+		["AG"] = "FdA",
+		["R-Cry"] = "Befehlsruf",
+		["H-Tide"] = "H-Tide",
+		["Barrier"] = "Barriere",
+		["Barrier+"] = "Barriere+",
+		["SLT"] = "SLT",
+		["Revival"] = "Belebung",
+		["Wings"] = "Z-Vergeltung",		
+		["Wings+"] = "Z-Vergeltung+",			
+		
+		--Externals
+		["Sac"] = "Aufopferung",
+		["G-Spirit"] = "Schutzgeist",
+		["G-Spirit+"] = "Schutzgeist+",
+		["Safeguard"] = "Sicherung",
+		["I-Bark"] = "Eisenborke",
+		["I-Bark+"] = "Eisenborke+",
+		["I-Bark+ "] = "Eisenborke+ ",
+		["P-Sup"] = "P-Sup",
+		["P-Sup+"] = "P-Sup+",
+		["L-Cocoon"] = "Konkon",
+		["BoP"] = "SdS",
+		["LoH"] = "Auflegen",
+		["LoH+"] = "Auflegen+",
+		["Spellward"] = "SdZ"
+	}
+else
+	TehrsCDs["deDE"].Translation_German_abilityNames = { } 
+	TehrsCDs["deDE"].Translation_German_buttonText = { }
+	TehrsCDs["deDE"].Translation_German_titles = { } 
+end
+
+
+if TehrsCDs["esES"].Translation_Spanish then
+	TehrsCDs["esES"].Translation_Spanish_titles = {
+		"CDs Externos",
+		"CDs de Raid",
+		"CDs de Utilidad",
+		"Inmunidades",
+		"Control de Masas",
+		"Interrupciones",
+		"Resurrecciones de Batalla",
+		"Temporizador de Res. de Batalla"
+	}
+
+	TehrsCDs["esES"].Translation_Spanish_buttonText = {  
+		["Cancel"] = "Cancelar",  -- "Cancel"
+		["print1"] = " en Raid",  -- " in Raid"
+		["printEnabled"] = "HABILITADO",  -- "ENABLED"
+		["printDisabled"] = "DESHABILITADO",  -- "DISABLED"
+		["allCDs"] = "Todos los CDs",  -- "All CDs"
+		["resetSuccess"] = "Reinicio exitoso",  -- "Successfully reset"
+		["L1N1"] = "Ajustes",  -- "Settings"
+		["L1N2"] = "Activar interfaz",  -- "Toggle Display"
+		["L1N3"] = "Activar deslizador",  -- "Toggle Sliders"
+		["L1N4"] = "Ajustes de Visibilidad General",  -- "General Visibility Settings"
+		["L1N8"] = "Verificar CDs",  -- "Check CDs"
+		--["L1N9"] = "Sort CDs by Time",
+		["L1N10"] = "Show Empty Groups",
+		["L1N11"] = "Show Only On Cooldown",		
+		["L2N1.1"] = "Ajustes Generales",  -- "General Settings"
+		["L2N2.1"] = "Mostrar Todo",  -- "Show All"
+		["L2N3.1"] = "Mostrar CDs Externos",  -- "Show External CDs"
+		["L2N4.1"] = "Mostrar CDs de Raid",  -- "Show Raid CDs"
+		["L2N5.1"] = "Mostrar CDs de Utilidad",  -- "Show Utility CDs"
+		["L2N6.1"] = "Mostrar Inmunidades",  -- "Show Immunities"
+		["L2N7.1"] = "Mostrar Control de Masas",  -- "Show Crowd Control"
+		["L2N8.1"] = "Mostrar Interrupciones",  -- "Show Interrupts"
+		["L2N9.1"] = "Mostrar Resurrecciones de Batalla",  -- "Show Battle Rezzes"
+		["L1N5"] = "Ajustes de Visibilidad de Raid",  -- "Raid Visibility Settings"
+		["L2N1.2"] = "Ajustes de Raid",  -- "Raid Settings"
+		["L2N2.2"] = "Mostrar Todo",  -- "Show All"
+		["L2N3.2"] = "Mostrar CDs Externos",  -- "Show External CDs"
+		["L2N4.2"] = "Mostrar CDs de Raid",  -- "Show Raid CDs"
+		["L2N5.2"] = "Mostrar CDs de Utilidad",  -- "Show Utility CDs"
+		["L2N6.2"] = "Mostrar Inmunidades",  -- "Show Immunities"
+		["L2N7.2"] = "Mostrar Control de Masas",  -- "Show Crowd Control"
+		["L2N8.2"] = "Mostrar Interrupciones",  -- "Show Interrupts"translation"
+		["L2N9.2"] = "Mostrar Resurrecciones de Batalla",  -- "Show Battle Rezzes"
+		["L2N10.2"] = "Mostrar Ankh",  -- "Show Ankh"
+		["L2N11.2"] = "Mostrar Temporizador de Res. de Batalla",  -- "Show Battle Rez Timer"
+		["L1N6"] = "Reiniciar Enfriamientos",  -- "Reset Cooldowns"
+		["L2N1.3"] = "Reiniciar Enfriamientos",  -- "Reset Cooldowns"
+		["L2N2.3"] = "Reiniciar todos los Enfriamientos",  -- "Reset All CDs"
+		["L2N3.3"] = "Reiniciar Enfriamientos Externos",  -- "Reset External CDs"
+		["L2N4.3"] = "Reiniciar Enfriamientos de Raid",  -- "Reset Raid CDs"
+		["L2N5.3"] = "Reiniciar Enfriamientos de Utilidad",  -- "Reset Utility CDs"
+		["L2N6.3"] = "Reiniciar Inmunidades",  -- "Reset Immunities"
+		["L2N7.3"] = "Reiniciar Control de Masas",  -- "Reset Crowd Control"
+		["L2N8.3"] = "Reiniciar  Interrupciones",  -- "Reset Interrupts"
+		["L2N9.3"] = "Reiniciar Resurrecciones de Batalla",  -- "Reset Battle Rezzes"
+		["L1N7"] = "Mostrar CDs Individuales",  -- "Show Individual CDs"
+		["L2N1.4"] = "Mostrar CDs Individuales",  -- "Show Individual CDs"
+		["L2N2.4"] = "Utilidad |cFFF58CBABdP|r",  -- "Utility |cFFF58CBABoP|r"
+		["L2N3.4"] = "CDs Externos",  -- "External CDs"
+		["L2N4.4"] = "CDs de Raid",  -- "Raid CDs"
+		["L2N5.4"] = "CDs de Utilidad",  -- "Utility CDs"
+		["L2N6.4"] = "Inmunidades",  -- "Immunities"
+		["L2N7.4"] = "Control de Masas",  -- "Crowd Control"
+		["L2N8.4"] = "Interrupciones",  -- "Interrupts"
+		["L2N9.4"] = "Resurrecciones de Batalla",  -- "Battle Rezzes"
+		["L2N10.4"] = "Ankh",  -- "Ankh"
+		["L2N11.4"] = "Temporizador de Res de Batalla"  -- "Battle Rez Timer"
+	}
+	
+	TehrsCDs["esES"].Translation_Spanish_abilityNames = {
+		--Immunities
+		["Turtle"] = "Tortuga",
+		["Turtle+"] = "Tortuga+",
+		["Cloak"] = "Capa",
+		["Block"] = "Bloquear",
+		["Block+"] = "Bloquear+",
+		["Netherwalk"] = "Camino Abisal",
+		["Bubble"] = "Burbuja",
+		["Bubble+"] = "Burbuja+",
+
+		--Crowd Control
+		["Cap Totem"] = "Totem Cap",
+		["Cap Totem+"] = "Totem Cap+",
+		["Shadowfury"] = "Furia",
+		["Shadowfury+"] = "Furia+",
+		["Infernal"] = "Infernal",
+		["Binding"] = "Luz Cegadora",
+		["Sweep"] = "Barrida",
+		["Sweep+"] = "Barrida+",
+		["Ursol"] = "Ursol",
+		["Typhoon"] = "Tifón",
+		["Mind Bomb"] = "Bomba Mental",
+		["Stomp"] = "Estampida",
+		["Shockwave"] = "Terremoto",
+		["Shockwave+"] = "Terremoto+",
+		["Nova"] = "Nova",
+		["Nova+"] = "Nova+",
+		["Grasp"] = "Abrazo",
+		["Grasp+"] = "Abrazo+",
+		["Chains"] = "Cadenas",
+		["Thunderstorm"] = "Tormenta",
+		["Ring"] = "Anillo",
+		["Shining"] = "Brillante",		
+
+		--Interrupts
+		["Kick"] = "Patear",
+		["Pummel"] = "Zurrar",
+		["S-Bash"] = "Testarazo",
+		["M-Freeze"] = "Con. Cerebral",
+		["Disrupt"] = "Consumir",
+		["Rebuke"] = "Reprimenda",
+		["W-Shear"] = "Corte de V",
+		["S-Strike"] = "Golpe MdL",
+		["Muzzle"] = "Amord",
+		["C-Shot"] = "Contradisparo",
+		["C-Spell"] = "Contrahech",
+		["Spell Lock"] = "Bloqueo de H",
+		["S-Beam"] = "R-Solar",
+		--["Torrent"] = "Torrente", Arcane Torrent isn't an interrupt anymore! Holding onto this until I add dispels.
+		["Silence"] = "Silenciar",
+		["Silence+"] = "Silenciar+",
+		["S-Silence"] = "S-Silenciar",
+		["S-Silence+"] = "S-Silenciar+",
+
+		--Battle Rezzes
+		["Ankh"] = "Ankh",
+		["Raise Ally"] = "Lev. Aliado",
+		["Soulstone"] = "Piedra de Alma",
+		["Rebirth"] = "Renacer",
+		["Pet Rez"] = "Res Mascota",
+
+		--Utility CDs
+		["Tricks"] = "Trucos",
+		["Misdirect"] = "Redirección",
+		["Roar"] = "Rugido",
+		["Hope"] = "Esperanza",
+		["Innervate"] = "Estimular",
+		["Grip"] = "Atracción",
+		["Wind Rush"] = "Carga de V",
+		["Treants"] = "Árboles",	
+
+		--Raid CDs
+		["Aura-M"] = "Aura-C",
+		["Aegis"] = "Égida",
+		["VE"] = "AV",
+		["VE+"] = "AV+",
+		["Darkness"] = "Oscuridad",
+		["A-Prot"] = "A-Prot",
+		["D-Hymn"] = "H-Divino",
+		["Tranq"] = "Tranq",
+		["Tranq+"] = "Tranq+",
+		["AG"] = "GA",
+		["R-Cry"] = "Grito-C",
+		["H-Tide"] = "Marea-A",
+		["Barrier"] = "Barrera",
+		["Barrier+"] = "Barrera+",
+		["SLT"] = "TEdE",
+		["Revival"] = "Reanim",
+		["Wings"] = "Alas",	
+		["Wings+"] = "Alas+",			
+
+		--Externals
+		["Sac"] = "Sac",
+		["G-Spirit"] = "Esp-G",
+		["G-Spirit+"] = "Esp-G+",
+		["Safeguard"] = "Salvaguarda",
+		["I-Bark"] = "C-Hierro",
+		["I-Bark+"] = "C-Hierro+",
+		["I-Bark+ "] = "C-Hierro+ ",
+		["P-Sup"] = "Sup-D",
+		["P-Sup+"] = "Sup-D+",
+		["L-Cocoon"] = "C-Vital",
+		["BoP"] = "BdP",
+		["LoH"] = "IdM",
+		["LoH+"] = "IdM+",
+		["Spellward"] = "RcH"
+	}
+else
+	TehrsCDs["esES"].Translation_Spanish_abilityNames = { } 
+	TehrsCDs["esES"].Translation_Spanish_buttonText = { }
+	TehrsCDs["esES"].Translation_Spanish_titles = { } 
+end
+
+
+if TehrsCDs["ruRU"].Translation_Russian then
+	TehrsCDs["ruRU"].Translation_Russian_titles = {
+		"Внешние Сейвы",
+		"Рейдовые КД",
+		"Утилиты",
+		"Иммунитеты",
+		"АоЕ контроль",
+		"Прерывания",
+		"БР",
+		"таймеры БР"
+	}
+
+	TehrsCDs["ruRU"].Translation_Russian_buttonText = {  
+		["Cancel"] = "Отмена",
+		["print1"] = " в Рейде",
+		["printEnabled"] = "ВКЛЮЧЕНО",
+		["printDisabled"] = "ОТКЛЮЧЕНО",
+		["allCDs"] = "Все КД",
+		["resetSuccess"] = "Успешно сброшено",
+		["L1N1"] = "Настройки",
+		["L1N2"] = "Показать / Скрыть",
+		["L1N3"] = "Слайдеры Текста и Фона",
+		["L1N4"] = "Общие Настройки Видимости",
+		["L1N8"] = "Проверка КД",
+		--["L1N9"] = "Sort CDs by Time",
+		["L1N10"] = "Show Empty Groups",
+		["L1N11"] = "Show Only On Cooldown",		
+		["L2N1.1"] = "Общие Настройки",
+		["L2N2.1"] = "Показывать Все",
+		["L2N3.1"] = "Показывать Внешние Сейвы",
+		["L2N4.1"] = "Показать Рейд. КД",
+		["L2N5.1"] = "Показать Утилиты",
+		["L2N6.1"] = "Показать Иммунитеты",
+		["L2N7.1"] = "Показать АоЕ контроль",
+		["L2N8.1"] = "Показать Прерывания",
+		["L2N9.1"] = "Показать БР",
+		["L1N5"] = "Настройки Видимости в Рейде",
+		["L2N1.2"] = "Настройки Рейда",
+		["L2N2.2"] = "Показать всё",
+		["L2N3.2"] = "Показывать Внешние Сейвы",
+		["L2N4.2"] = "Показать Рейд. КД",
+		["L2N5.2"] = "Показать Утилиты",
+		["L2N6.2"] = "Показать Иммунитеты",
+		["L2N7.2"] = "Показать АоЕ контроль",
+		["L2N8.2"] = "Показать Прерывания",
+		["L2N9.2"] = "Показать БР",
+		["L2N10.2"] = "Показать Анкх",
+		["L2N11.2"] = "Показать таймеры БР",
+		["L1N6"] = "Обновление КД",
+		["L2N1.3"] = "Сбросить кулдауны",
+		["L2N2.3"] = "Сбросить все КД",
+		["L2N3.3"] = "Сбросить Дополнительные КД",
+		["L2N4.3"] = "Сбросить рейдовые КД",
+		["L2N5.3"] = "Сбросить Утилиты",
+		["L2N6.3"] = "Сбросить Иммунитеты",
+		["L2N7.3"] = "Сбросить АоЕ контроль",
+		["L2N8.3"] = "Сбросить Прерывания",
+		["L2N9.3"] = "Сбросить БР",
+		["L1N7"] = "Показ Индивидуальных КД",
+		["L2N1.4"] = "Показ Индивидуальных КД",
+		["L2N2.4"] = "Вспомогательные КД |cFFF58CBAБоП|r",
+		["L2N3.4"] = "Внешние Сейвы",
+		["L2N4.4"] = "Рейд. КД",
+		["L2N5.4"] = "Утилиты",
+		["L2N6.4"] = "Иммунитеты",
+		["L2N7.4"] = "АоЕ контроль",
+		["L2N8.4"] = "Прерывания",
+		["L2N9.4"] = "БР",
+		["L2N10.4"] = "Анкх",
+		["L2N11.4"] = "таймеры БР"
+	}
+	
+	TehrsCDs["ruRU"].Translation_Russian_abilityNames = {
+		--Immunities
+		["Turtle"] = "Черепаха",
+		["Turtle+"] = "Черепаха+",
+		["Cloak"] = "КоШ",
+		["Block"] = "Глыба",
+		["Block+"] = "Глыба+",
+		["Netherwalk"] = "Путь Пустоты",
+		["Bubble"] = "Баббл",
+		["Bubble+"] = "Баббл+",
+
+		--Crowd Control
+		["Cap Totem"] = "Стан Тотем",
+		["Cap Totem+"] = "Стан Тотем+",
+		["Shadowfury"] = "Шадоуфьюри",
+		["Shadowfury+"] = "Шадоуфьюри+",
+		["Infernal"] = "Инфернал",
+		["Binding"] = "Стрела",
+		["Sweep"] = "Круг. Удар",
+		["Sweep+"] = "Круг. Удар+",
+		["Ursol"] = "В. Урсола",
+		["Typhoon"] = "Тайфун",
+		["Mind Bomb"] = "Мыслебомба",
+		["Stomp"] = "Поступь",
+		["Shockwave"] = "Шоквейв",
+		["Shockwave+"] = "Шоквейв+",
+		["Nova"] = "Хаос Нова",
+		["Nova+"] = "Хаос Нова+",
+		["Grasp"] = "М. Стяжка",
+		["Grasp+"] = "М. Стяжка+",
+		["Chains"] = "Пч. Цепей",
+		["Thunderstorm"] = "Шторм",
+		["Ring"] = "Круг",
+		["Shining"] = "Сияние",	
+
+		--Interrupts
+		["Kick"] = "Пинок",
+		["Pummel"] = "Зуботыч",
+		["S-Bash"] = "Лоб. Атака",
+		["M-Freeze"] = "З. Разума",
+		["Disrupt"] = "Поглощение",
+		["Rebuke"] = "Укор",
+		["W-Shear"] = "Пр. Ветер",
+		["S-Strike"] = "Рука-Копье",
+		["Muzzle"] = "Намордник",
+		["C-Shot"] = "Встр. Выстрел",
+		["C-Spell"] = "Контрспелл",
+		["Spell Lock"] = "Запр. Чар",
+		["S-Beam"] = "Столп Света",
+		--["Torrent"] = "Поток", Arcane Torrent isn't an interrupt anymore! Holding onto this until I add dispels.
+		["Silence"] = "Сайленс",
+		["Silence+"] = "Сайленс+",
+		["S-Silence"] = "П. Немоты",
+		["S-Silence+"] = "П. Немоты+",
+
+		--Battle Rezzes
+		["Ankh"] = "Реинкарн.",
+		["Raise Ally"] = "Воскрешение",
+		["Soulstone"] = "Камень Д.",
+		["Rebirth"] = "Возрождение",
+		["Pet Rez"] = "Пет БР",
+
+		--Utility CDs
+		["Tricks"] = "Триксы",
+		["Misdirect"] = "Мисдирект",
+		["Roar"] = "Рык",
+		["Hope"] = "Символ",
+		["Innervate"] = "Иннер",
+		["Grip"] = "Рвение",
+		["Wind Rush"] = "Ускор. Тотем",
+		["Treants"] = "Древни",	
+
+		--Raid CDs
+		["Aura-M"] = "Мастер Аур",
+		["Aegis"] = "Эгида",
+		["VE"] = "Вампирик",
+		["VE+"] = "Вампирик+",
+		["Darkness"] = "Мрак",
+		["A-Prot"] = "БР Тотем",
+		["D-Hymn"] = "Гимн",
+		["Tranq"] = "Транквил",
+		["Tranq+"] = "Транквил+",
+		["AG"] = "Наставление",
+		["R-Cry"] = "Крик",
+		["H-Tide"] = "Хил Тотем",
+		["Barrier"] = "Купол",
+		["Barrier+"] = "Купол+",
+		["SLT"] = "СЛТ",
+		["Revival"] = "Восстановление",
+		["Wings"] = "Крылья",
+		["Wings+"] = "Крылья+",		
+
+		--Externals
+		["Sac"] = "Сакра",
+		["G-Spirit"] = "Дух",
+		["G-Spirit+"] = "Дух+",
+		["Safeguard"] = "Охрана",
+		["I-Bark"] = "Кора",
+		["I-Bark+"] = "Кора+",
+		["I-Bark+ "] = "Кора+ ",
+		["P-Sup"] = "Зубы",
+		["P-Sup+"] = "Зубы+",
+		["L-Cocoon"] = "Кокон",
+		["BoP"] = "БоП",
+		["LoH"] = "ЛоХ",
+		["LoH+"] = "ЛоХ+",
+		["Spellward"] = "Маг. БоП"
+	}
+else
+	TehrsCDs["ruRU"].Translation_Russian_abilityNames = { } 
+	TehrsCDs["ruRU"].Translation_Russian_buttonText = { }
+	TehrsCDs["ruRU"].Translation_Russian_titles = { } 
+end
+
+
+if TehrsCDs["itIT"].Translation_Italian then
+	TehrsCDs["itIT"].Translation_Italian_titles = {
+		"Esterni", 
+		"Raid",
+		"Utilità",
+		"Immunità",
+		"Controlli",
+		"Interruzioni",
+		"Rinascite",
+		"n. Rinascite"
+	}
+
+	TehrsCDs["itIT"].Translation_Italian_buttonText = {
+		["Cancel"] = "Cancella",  -- "Cancel"
+		["print1"] = " in Raid",  -- " in Raid"
+		["printEnabled"] = "ABILITATO",  -- "ENABLED"
+		["printDisabled"] = "DISABILITATO",  -- "DISABLED"
+		["allCDs"] = "Tutti i CD",  -- "All CDs"
+		["resetSuccess"] = "Resettato correttamente",  -- "Successfully reset"
+		["L1N1"] = "Impostazioni",  -- "Settings"
+		["L1N2"] = "Mostra Schermo",  -- "Toggle Display"
+		["L1N3"] = "Mostra Cursori",  -- "Toggle Sliders"
+		["L1N4"] = "Impostazioni Visibilità Generale",  -- "General Visibility Settings"
+		["L1N8"] = "Controlla CDs",  -- "Check CDs"
+		--["L1N9"] = "Sort CDs by Time",
+		["L1N10"] = "Show Empty Groups",
+		["L1N11"] = "Show Only On Cooldown",		
+		["L2N1.1"] = "Impostazioni Generali",  -- "General Settings"
+		["L2N2.1"] = "Mostra Tutto",  -- "Show All"
+		["L2N3.1"] = "Mostra CDs Esterni",  -- "Show External CDs"
+		["L2N4.1"] = "Mostra CDs Raid",  -- "Show Raid CDs"
+		["L2N5.1"] = "Mostra CDs Utilità",  -- "Show Utility CDs"
+		["L2N6.1"] = "Mostra Immunità",  -- "Show Immunities"
+		["L2N7.1"] = "Mostra Controlli",  -- "Show Crowd Control"
+		["L2N8.1"] = "Mostra Interruzioni",  -- "Show Interrupts"
+		["L2N9.1"] = "Mostra Rinascite",  -- "Show Battle Rezzes"
+		["L1N5"] = "Impostazioni Visibilità Raid",  -- "Raid Visibility Settings"
+		["L2N1.2"] = "Impostazioni Raid",  -- "Raid Settings"
+		["L2N2.2"] = "Mostra Tutto",  -- "Show All"
+		["L2N3.2"] = "Mostra CDs Esterni",  -- "Show External CDs"
+		["L2N4.2"] = "Mostra CDs Raid",  -- "Show Raid CDs"
+		["L2N5.2"] = "Mostra CDs Utilità",  -- "Show Utility CDs"
+		["L2N6.2"] = "Mostra Immunità",  -- "Show Immunities"
+		["L2N7.2"] = "Mostra Controlli",  -- "Show Crowd Control"
+		["L2N8.2"] = "Mostra Interruzioni",  -- "Show Interrupts"translation"
+		["L2N9.2"] = "Mostra Rinascite",  -- "Show Battle Rezzes"
+		["L2N10.2"] = "Mostra Reincarnazioni",  -- "Show Ankh"
+		["L2N11.2"] = "Mostra Timer Rinascite in Combattimento",  -- "Show Battle Rez Timer"
+		["L1N6"] = "Reset CDs",  -- "Reset Cooldowns"
+		["L2N1.3"] = "Reset CDs",  -- "Reset Cooldowns"
+		["L2N2.3"] = "Reset tutti i CDs",  -- "Reset All CDs"
+		["L2N3.3"] = "Reset CDs Esterni",  -- "Reset External CDs"
+		["L2N4.3"] = "Reset CDs Raid",  -- "Reset Raid CDs"
+		["L2N5.3"] = "Reset CDs Utilità",  -- "Reset Utility CDs"
+		["L2N6.3"] = "Reset Immunità",  -- "Reset Immunities"
+		["L2N7.3"] = "Reset Controlli",  -- "Reset Crowd Control"
+		["L2N8.3"] = "Reset Interruzioni",  -- "Reset Interrupts"
+		["L2N9.3"] = "Reset Rinascite",  -- "Reset Battle Rezzes"
+		["L1N7"] = "Mostra CDs Individuali",  -- "Show Individual CDs"
+		["L2N1.4"] = "Mostra CDs Individuali",  -- "Show Individual CDs"
+		["L2N2.4"] = "Utilità |cFFF58CBAProtezione|r",  -- "Utility |cFFF58CBABoP|r"
+		["L2N3.4"] = "Esterni",  -- "External CDs"
+		["L2N4.4"] = "Raid",  -- "Raid CDs"
+		["L2N5.4"] = "Utilità",  -- "Utility CDs"
+		["L2N6.4"] = "Immunità",  -- "Immunities"
+		["L2N7.4"] = "Controlli",  -- "Crowd Control"
+		["L2N8.4"] = "Interruzioni",  -- "Interrupts"
+		["L2N9.4"] = "Rinascite",  -- "Battle Rezzes"
+		["L2N10.4"] = "Reincarnazioni",  -- "Ankh"
+		["L2N11.4"] = "Timer Rinascite"  -- "Battle Rez Timer"
+	}		
+
+	TehrsCDs["itIT"].Translation_Italian_abilityNames = {
+		--Immunities
+		["Turtle"] = "Tarta",
+		["Turtle+"] = "Tarta+",
+		["Cloak"] = "Manto",
+		["Block"] = "Bloc",
+		["Block+"] = "Bloc+",
+		["Netherwalk"] = "Calcafatuo",
+		["Bubble"] = "Bolla",
+		["Bubble+"] = "Bolla+",
+
+		--Crowd Control
+		["Cap Totem"] = "TotemCond",
+		["Cap Totem+"] = "TotemCond+",
+		["Shadowfury"] = "Furia",
+		["Shadowfury+"] = "Furia+",
+		["Infernal"] = "Infern",
+		["Binding"] = "TiroVinc",
+		["Sweep"] = "Spazz",
+		["Sweep+"] = "Spazz+",
+		["Ursol"] = "Vortice",
+		["Typhoon"] = "Tifone",
+		["Mind Bomb"] = "BombaMent",
+		["Stomp"] = "Urto",
+		["Shockwave"] = "O-Urto",
+		["Shockwave+"] = "O-Urto+",
+		["Nova"] = "E-Gelida",
+		["Nova+"] = "E-Gelida+",
+		["Grasp"] = "Presa",
+		["Grasp+"] = "Presa+",
+		["Chains"] = "Catene",
+		["Thunderstorm"] = "E-Tonante",
+		["Ring"] = "A-Ghiaccio",
+		["Shining"] = "F-Lucente",		
+
+		--Interrupts
+		["Kick"] = "Calcio",
+		["Pummel"] = "Pugno",
+		["S-Bash"] = "S-Cranio",
+		["M-Freeze"] = "G-Mentale",
+		["Disrupt"] = "Distruz",
+		["Rebuke"] = "Predica",
+		["W-Shear"] = "R-Vento",
+		["S-Strike"] = "Compres",
+		["Muzzle"] = "Museruola",
+		["C-Shot"] = "T-Contrasto",
+		["C-Spell"] = "C-Incantes",
+		["Spell Lock"] = "B-Incantes",
+		["S-Beam"] = "F-Solare",
+		--["Torrent"] = "T-Arcano", Arcane Torrent isn't an interrupt anymore! Holding onto this until I add dispels.
+		["Silence"] = "Silenzio",
+		["Silence+"] = "Silenzio+",
+		["S-Silence"] = "S-Silenz",
+		["S-Silence+"] = "S-Silenz+",
+
+		--Battle Rezzes
+		["Ankh"] = "Reincarn",
+		["Raise Ally"] = "Rianima",
+		["Soulstone"] = "PietraAnima",
+		["Rebirth"] = "P-Ritorno",
+
+		--Utility CDs
+		["Tricks"] = "Trucchi",
+		["Misdirect"] = "Depist",
+		["Roar"] = "Ruggito",
+		["Hope"] = "Speranza",
+		["Innervate"] = "Innerv",
+		["Grip"] = "Presa",
+		["Wind Rush"] = "S-Vento",
+		["Treants"] = "Alberi",		
+
+		--Raid CDs
+		["Aura-M"] = "MaestriaA",
+		["Aegis"] = "Egida",
+		["VE"] = "AVampir",
+		["VE+"] = "AVampir+",
+		["Darkness"] = "Oscurità",
+		["A-Prot"] = "A-Prot",
+		["D-Hymn"] = "I-Divino",
+		["Rapture"] = "Estasi",
+		["Salvation"] = "Salvezza",
+		["Apotheosis"] = "Apoteosi",	
+		["Flourish"] = "Infiore",	
+		["Tranq"] = "Tranq",
+		["Tranq+"] = "Tranq+",
+		["AG"] = "G-Ancestr",
+		["R-Cry"] = "ChiamRacc",
+		["H-Tide"] = "Marea",
+		["Barrier"] = "Barriera",
+		["Barrier+"] = "Barriera+",
+		["SLT"] = "CollegSpirit",
+		["Ascendance"] = "Ascesa",	
+		["Revival"] = "Palingenesi",
+		["Wings"] = "Ira",		
+		["Wings+"] = "Ira+",		
+
+		--Externals
+		["Sac"] = "Sacrificio",
+		["G-Spirit"] = "Custode",
+		["G-Spirit+"] = "Custode+",
+		["Safeguard"] = "S-Guardia",
+		["I-Bark"] = "Corteccia",
+		["I-Bark+"] = "Corteccia+",
+		["P-Sup"] = "Soppress",
+		["P-Sup+"] = "Soppress+",
+		["L-Cocoon"] = "Bozzolo",
+		["BoP"] = "Protezione",
+		["LoH"] = "M-Celest",
+		["LoH+"] = "M-Celest+",
+		["Spellward"] = "P-Magica"
+	}
+else
+	TehrsCDs["itIT"].Translation_Italian_abilityNames = { } 
+	TehrsCDs["itIT"].Translation_Italian_buttonText = { }
+	TehrsCDs["itIT"].Translation_Italian_titles = { } 
+end
