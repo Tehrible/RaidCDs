@@ -1,0 +1,136 @@
+-- You must reload your UI by typing '/reload' after changing any of these settings
+local parentName = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]
+if (parentName["TehrsRaidCDs"] == nil) then parentName["TehrsRaidCDs"] = {} end    
+if (parentName["TehrsRaidCDs"]["Show Settings"] == nil) then parentName["TehrsRaidCDs"]["Show Settings"] = {} end
+local TehrsCDs = parentName["TehrsRaidCDs"]        
+
+
+aura_env.raidCDsIndentAmount = "  " --Indents players' names under the title of their respective sections
+aura_env.recolor = true --If true, players' names and cooldowns will be colored when they're dead or out of range
+aura_env.deadColor = "|cFF333333"; --Players' names and cooldowns will be this color when they're dead
+aura_env.outOfRangeColor = "|cFF888888"; --Players' names and cooldowns will be this color when they're out of range
+aura_env.AprilFools = true --Displays the April Fools Eggo sample text on April 1st and 2nd
+TehrsCDs["Show Settings"].WhenSolo = true --Select "true" if you want to display when you're not in a group (e.g. to display just your own auras)
+
+
+--GENERAL SETTINGS
+--The following affects whether or not certain sections are displayed if you have less than 20 people in your group and are not in a raid instance
+TehrsCDs["Show Settings"].allExterns = TehrsCDs["Show Settings"].allExterns == nil and true or TehrsCDs["Show Settings"].allExterns;
+TehrsCDs["Show Settings"].allCDs = TehrsCDs["Show Settings"].allCDs == nil and true or TehrsCDs["Show Settings"].allCDs;
+TehrsCDs["Show Settings"].allUtility = TehrsCDs["Show Settings"].allUtility == nil and true or TehrsCDs["Show Settings"].allUtility;    
+TehrsCDs["Show Settings"].allImmunityCDs = TehrsCDs["Show Settings"].allImmunityCDs == nil and true or  TehrsCDs["Show Settings"].allImmunityCDs;       
+TehrsCDs["Show Settings"].allAoECCs = TehrsCDs["Show Settings"].allAoECCs == nil and true or  TehrsCDs["Show Settings"].allAoECCs;    
+TehrsCDs["Show Settings"].allRezzes = TehrsCDs["Show Settings"].allRezzes == nil and true or TehrsCDs["Show Settings"].allRezzes;     
+TehrsCDs["Show Settings"].allInterrupts = TehrsCDs["Show Settings"].allInterrupts == nil and true or TehrsCDs["Show Settings"].allInterrupts;
+TehrsCDs["Show Settings"].mythicDungeonBattleRezTimer = TehrsCDs["Show Settings"].mythicDungeonBattleRezTimer == nil and true or TehrsCDs["Show Settings"].mythicDungeonBattleRezTimer; --If true, will display how many Battle Rez charges are available, and how long until a new charge becomes ready ONLY during a M+ Dungeon -- DOES NOT NEED allRezzes TO BE ENABLED
+
+--RAID SETTINGS
+--The following affects whether or not certain sections are displayed in a raid instance OR if there are 20+ people in your group
+TehrsCDs["Show Settings"].allExterns_inRaid = TehrsCDs["Show Settings"].allExterns_inRaid == nil and true or TehrsCDs["Show Settings"].allExterns_inRaid;
+TehrsCDs["Show Settings"].allCDs_inRaid = TehrsCDs["Show Settings"].allCDs_inRaid == nil and true or TehrsCDs["Show Settings"].allCDs_inRaid;
+TehrsCDs["Show Settings"].allUtility_inRaid = TehrsCDs["Show Settings"].allUtility_inRaid == nil and true or TehrsCDs["Show Settings"].allUtility_inRaid;    
+TehrsCDs["Show Settings"].allImmunityCDs_inRaid = TehrsCDs["Show Settings"].allImmunityCDs_inRaid == nil and false or TehrsCDs["Show Settings"].allImmunityCDs_inRaid;       
+TehrsCDs["Show Settings"].allAoECCs_inRaid = TehrsCDs["Show Settings"].allAoECCs_inRaid == nil and false or TehrsCDs["Show Settings"].allAoECCs_inRaid;    
+TehrsCDs["Show Settings"].allRezzes_inRaid = TehrsCDs["Show Settings"].allRezzes_inRaid == nil and false or TehrsCDs["Show Settings"].allRezzes_inRaid; 
+TehrsCDs["Show Settings"].allInterrupts_inRaid = TehrsCDs["Show Settings"].allInterrupts_inRaid == nil and false or TehrsCDs["Show Settings"].allInterrupts_inRaid;
+TehrsCDs["Show Settings"].raidBattleRezTimer = TehrsCDs["Show Settings"].raidBattleRezTimer == nil and true or TehrsCDs["Show Settings"].raidBattleRezTimer; --If true, will display how many Battle Rez charges are available, and how long until a new charge becomes ready ONLY during a RAID Encounter -- DOES NOT NEED allRezzes_inRaid TO BE ENABLED
+TehrsCDs["Show Settings"].Ankh_inRaid = TehrsCDs["Show Settings"].Ankh_inRaid == nil and true or TehrsCDs["Show Settings"].Ankh_inRaid; --If true, Ankh CD will be displayed in addition to your Battle Rez timer when in a raid encounter -- DOES NOT NEED allRezzes_inRaid TO BE ENABLED
+
+--DON'T CHANGE THESE VALUES, REQUIRED FOR THIS WEAKAURA TO WORK CORRECTLY
+--Initialization Default
+TehrsCDs.minmaxDisplay = true
+TehrsCDs.encounterStart = false
+TehrsCDs._raidCDs_textPoll = nil;
+TehrsCDs["Show Settings"].SortByTimer = TehrsCDs["Show Settings"].SortByTimer or false 
+--Group Tables
+TehrsCDs._raidCDs_namesText = nil
+TehrsCDs._raidCDs_cdText = nil
+TehrsCDs._raidCDs_timeText = nil
+
+--RGB Percent (0-1) to Hex
+aura_env.RGBPercToHex = function(r, g, b)
+    r = r <= 1 and r >= 0 and r or 0
+    g = g <= 1 and g >= 0 and g or 0
+    b = b <= 1 and b >= 0 and b or 0
+    return string.format("%02x%02x%02x", r*255, g*255, b*255)
+end
+
+aura_env.colorByTime = function(time)
+    if (time <= 0) then
+        return "|cFF00FF00";
+    elseif (time <= 15) then
+        return "|cFFFFFF00";
+    elseif (time <= 90) then
+        return "|cFF"..aura_env.RGBPercToHex(1, 1- ((time - 15)/75), 0);
+    else
+        return "|cFFFF0000";
+    end  
+end
+
+aura_env.sortedPairs = function(t) 
+    if TehrsCDs["Show Settings"].SortByTimer then
+        local keys = {}
+        for k in pairs(t) do
+            keys[#keys+1] = k
+        end
+        table.sort(keys, function(a,b)
+                return t[b] > t[a]
+        end)
+        local i = 0
+        return function()
+            i = i + 1
+            if keys[i] then
+                return keys[i], t[keys[i]]
+            end
+        end
+    else
+        local keys = {}; 
+        for k in pairs(t) do
+            table.insert(keys, k)
+        end 
+        table.sort(keys, function(a,b) 
+                if tonumber(a) and tonumber(b) then 
+                    return a > b; 
+                else 
+                    return tostring(a)>tostring(b); 
+                end 
+        end) 
+        local i = 0; 
+        return function() 
+            if i < #keys then 
+                i = i + 1; 
+                return keys[i], t[keys[i]]; 
+            end 
+        end 
+    end
+end
+
+-- This is just here so I can debug when shit hits the fan, you will never need to enable this
+TehrsCDs.DEBUG = false -- Master control for debug, check GroupPoll and Engine On Inits for their respective debug options
+-- Note that this can be toggled in-game by typing:
+-- /script WeakAuras.ScanEvents("TehrsCDs.DEBUGTOGGLE")
+
+--Asterisks go here, boys
+aura_env.Supporters = {
+    --Hey, that's me!
+    ["Tehrdk"]="Illidan",["Tehrbrew"]="Illidan",["Tehrbear"]="Illidan",["Tehrdh"]="Illidan",["Tehrpally"]="Illidan",["Tehrwarrior"]="Illidan",["Tehrpriest"]="Sargeras",["Tehrlock"]="Sargeras",["Tehrhunter"]="Illidan",["Touchmywand"]="Sargeras",["Beermeister"]="Sargeras",["Tehrrogue"]="Illidan",
+    
+    --Patreon Supporters (no particular order)
+    ["Terra"]="Turalyon", --Original Donator 
+    ["Kyonjia"]="Proudmoore",
+    ["Vallory"]="Illidan",
+    ["Badlash"]="Sargeras",
+    ["Uldza"]="Kazzak",
+    ["Bawnie"]="BleedingHollow",
+    
+    --Translators!
+    ["Bbasae"]="Thrall",
+    ["Arctarus"]="Elune",
+    ["海绵熊"]="白银之手",
+    ["Fairytree"]="Hyjal",
+    ["希威婭"]="亞雷戈斯",
+    ["Edll"]="Nemesis",
+    
+    --Code Contributor
+    ["Elyssis"]="Bloodhoof"
+}
