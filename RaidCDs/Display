@@ -1,5 +1,4 @@
 function ()    
-    
 	local parentName = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]
 	if (parentName["TehrsRaidCDs"] == nil) then parentName["TehrsRaidCDs"] = {} end	
 	if (parentName["TehrsRaidCDs"]["Show Settings"] == nil) then parentName["TehrsRaidCDs"]["Show Settings"] = {} end
@@ -28,8 +27,7 @@ function ()
     local abilityNames
 	local CDText, timeText	
 	local CDTextAnchor, timeTextAnchor	
-    local region = aura_env.region
-	local backgroundName = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]["controlledChildren"][6]    
+    local region = aura_env.region  
 	local backgroundFrameLevel = region.bar:GetFrameLevel()
 	local regionFrameLevel = region:GetFrameLevel()	
 	local point, relativeTo, relativePoint, xOffset, yOffset = region:GetPoint()
@@ -2301,6 +2299,7 @@ function ()
 					
 					local rezCharges, _, started, duration = GetSpellCharges(20484)
 					local timerString = ""            
+					local extraSpace = ""
 					
 					if started then
 						local brezTimer = duration - (GetTime() - started)
@@ -2319,26 +2318,27 @@ function ()
 						rezCharges ="|cFF00FF00"..rezCharges.."|r" 
 					end
 					
-					TehrsCDs._raidCDs_namesText = TehrsCDs._raidCDs_namesText..aura_env.raidCDsIndentAmount.."|cFFFFFFFFCharges|r:\n"
-					TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText..rezCharges.."\n";
-					TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText..timerString.."\n";
+					if TehrsCDs._rezCDs_shamans then
+						extraSpace = "\n"
+					end                
+					
+					TehrsCDs._raidCDs_namesText = TehrsCDs._raidCDs_namesText..extraSpace..aura_env.raidCDsIndentAmount.."|cFFFFFFFFCharges|r:\n"
+					TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText..extraSpace..rezCharges.."\n";
+					TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText..extraSpace..timerString.."\n";
 				end        
 			end          
 		end
 		
-		if WeakAuras.regions[backgroundName] and TehrsCDs.minmaxDisplay then
+		if TehrsCDs.minmaxDisplay then
 			_, TehrsCDs.NamesTextLineCount = string.gsub(TehrsCDs._raidCDs_namesText, "\n", "");
 			local newWidth = 200 + (fontSize-11)*15
 			local newHeight = TehrsCDs.NamesTextLineCount * fontSize
 			
-			WeakAuras.regions[backgroundName].region:SetHeight(newHeight); 
-			WeakAuras.regions[backgroundName].region:SetWidth(newWidth) 
+			region:SetHeight(newHeight); 
+			region:SetWidth(newWidth) 
 			if TehrsCDs.minmaxDisplay then
 				_,_,_,TehrsCDs.BackgroundAlpha = region.bar.bg:GetVertexColor()
 			end
-			
-			--region:SetHeight(newHeight); 
-			--region:SetWidth(newWidth) 
 		end
 		
 		-- Create text overlays
@@ -2362,8 +2362,7 @@ function ()
 		if point == "BOTTOMLEFT" then
 			CDTextAnchor = "BOTTOM"
 			timeTextAnchor = "BOTTOMRIGHT"
-		else
-			point = "TOPLEFT"
+		elseif point == "TOPLEFT" then
 			CDTextAnchor = "TOP"
 			timeTextAnchor = "TOPRIGHT"
 			
@@ -2374,7 +2373,7 @@ function ()
 		
 		region.namesText:GetParent():SetFrameLevel(backgroundFrameLevel + 1)
 		region.namesText:ClearAllPoints()
-		region.namesText:SetPoint(point, relativeTo, relativePoint, xOffset, aura_env.textyOffset + yOffset);
+		region.namesText:SetPoint(point, relativeTo, relativePoint, xOffset + 2, aura_env.textyOffset + yOffset);
 		region.namesText:SetFont(fontName, fontSize, fontFlags) 
 		region.namesText:SetJustifyH("LEFT")	
 		region.namesText:SetJustifyV(CDTextAnchor)	
@@ -2399,4 +2398,3 @@ function ()
 	
     return ""--TehrsCDs._raidCDs_namesText  
 end
-
