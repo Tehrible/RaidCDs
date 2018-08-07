@@ -267,6 +267,7 @@ if TehrsCDs["frFR"].Translation_French then
 		["L2N9.1"] = "Afficher/Masquer Rez Combat",
 		["L1N5"] = "Réglage Raid",
 		["L2N1.2"] = "Réglage Raid",
+		["L2N2.2"] = "Afficher Tous",
 		["L2N3.2"] = "Afficher/Masquer Externes",
 		["L2N4.2"] = "Afficher/Masquer CDs Raid",
 		["L2N5.2"] = "Afficher/Masquer CDs Utiles",
