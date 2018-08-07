@@ -1,0 +1,173 @@
+-- Currently bugged and non-functional
+-- Do not use
+
+
+
+-- LAST CHANGED:
+-- 17 January 2018
+-- Update 93
+
+
+local parentName = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]
+if (parentName["TehrsRaidCDs"] == nil) then parentName["TehrsRaidCDs"] = {} end    
+if (parentName["TehrsRaidCDs"]["Custom Abilities"] == nil) then parentName["TehrsRaidCDs"]["Custom Abilities"] = {} end    
+local TehrsCDs = parentName["TehrsRaidCDs"]
+
+TehrsCDs["Custom Abilities"].CustomAbilities = false
+
+if TehrsCDs["Custom Abilities"].CustomAbilities then
+    --[[    The following are the non-localized names of each race (from https://wow.gamepedia.com/API_UnitRace):
+
+        Dwarf
+        Draenei
+        Gnome
+        Human
+        NightElf
+        Worgen
+        BloodElf
+        Goblin
+        Orc
+        Tauren
+        Troll
+        Scourge
+        Pandaren
+
+    The following are the class ID and spec ID of each class and spec, respectively (from http://wowwiki.wikia.com/wiki/API_UnitClass and http://wowwiki.wikia.com/wiki/SpecializationID):
+
+        6 - Death Knight
+            250 - Blood
+            251 - Frost
+            252 - Unholy
+        12 - Demon Hunter
+            577 - Havoc
+            581 - Vengeance
+        11 - Druid
+            102 - Balance
+            103 - Feral
+            104 - Guardian
+            105 - Restoration
+        3 - Hunter
+            253 - Beast Mastery
+            254 - Marksmanship
+            255 - Survival
+        8 - Mage
+            62 - Arcane
+            63 - Fire
+            64 - Frost
+        10 - Monk
+            268 - Brewmaster
+            269 - Windwalker
+            270 - Mistweaver
+        2 - Paladin
+            65 - Holy
+            66 - Protection
+            70 - Retribution
+        5 - Priest
+            256 - Discipline
+            257 - Holy
+            258 - Shadow
+        4 - Rogue
+            259 - Assassination
+            260 - Outlaw
+            261 - Subtlety
+        7 - Shaman
+            262 - Elemental
+            263 - Enhancement
+            264 - Restoration
+        9 - Warlock
+            265 - Affliction
+            266 - Demonology
+            267 - Destruction
+        1 - Warrior
+            71 - Arms
+            72 - Fury
+            73 - Protection    ]]
+    
+    TehrsCDs["Custom Abilities"].AddCDs = function(playerName, class, race, specName, activeSpec, isPlayer)
+        -- Note that you won't need to use most of these arguments (race, activeSpec, isPlayer, etc.), they're just here for posterity's sake    
+        
+        
+        -- YOUR CODE GOES HERE    
+        
+        
+        --[[    The following is an example of how you would format this section:
+
+            if (class == 12) then 
+                if (TehrsCDs._interrupts_dhs == nil) then TehrsCDs._interrupts_dhs = {} end
+                if (TehrsCDs._interrupts_dhs[playerName] == nil) then TehrsCDs._interrupts_dhs[playerName] = {} end            
+                
+                if (TehrsCDs._interrupts_dhs[playerName]["Disrupt"] == nil) then
+                    TehrsCDs._interrupts_dhs[playerName]["Disrupt"] = GetTime();
+                end   
+                
+                if (specName == 581) then        
+                    local _, _, _, improvedSilenceSpecced = GetTalentInfo(5, 3, activeSpec, not isPlayer, playerName);  -- Talent is Row 5, Column 3
+                    if (improvedSilenceSpecced) then   
+                        if (TehrsCDs._interrupts_dhs[playerName]["S-Silence+"] == nil) then
+                            TehrsCDs._interrupts_dhs[playerName]["S-Silence+"] = GetTime();
+                        end  
+                        TehrsCDs._interrupts_dhs[playerName]["S-Silence"] = nil;   
+                    else
+                        if (TehrsCDs._interrupts_dhs[playerName]["S-Silence"] == nil) then
+                            TehrsCDs._interrupts_dhs[playerName]["S-Silence"] = GetTime();
+                        end 
+                        TehrsCDs._interrupts_dhs[playerName]["S-Silence+"] = nil;                      
+                    end 
+                elseif (specName == 577) then  
+                    TehrsCDs._interrupts_dhs[playerName]["S-Silence+"] = nil;
+                    TehrsCDs._interrupts_dhs[playerName]["S-Silence"] = nil;
+                end
+                
+            elseif (class == 7) then
+                if (TehrsCDs._raidCDs_shamans == nil) then TehrsCDs._raidCDs_shamans = {} end
+                if (TehrsCDs._raidCDs_shamans[playerName] == nil) then TehrsCDs._raidCDs_shamans[playerName] = {} end
+                
+                if (specName == 264) then
+                    if (TehrsCDs._raidCDs_shamans[playerName]["SLT"] == nil) then
+                        TehrsCDs._raidCDs_shamans[playerName]["SLT"] = GetTime();
+                    end 
+                elseif (specName == 262) then
+                    TehrsCDs._raidCDs_shamans[playerName]["SLT"] = nil;                    
+                elseif (specName == 263) then
+                    TehrsCDs._raidCDs_shamans[playerName]["SLT"] = nil;  
+                end
+                
+            end        ]]
+    end
+    
+    TehrsCDs["Custom Abilities"].UseCDs = function(event, arg1, eventType, arg2, sourceGUID, sourceName, sourceFlags, sourceFlags2, destGUID, destName, destFlags, destFlags2, spellID, spellName, spellSchool, extraSpellID, extraSpellName, extraSpellSchool)
+        -- Note that you won't need to use most of these arguments, they're just here for posterity's sake
+        
+        
+        -- YOUR CODE GOES HERE    
+        
+        
+        --[[    The following is an example of how you would format this section:
+
+            if (eventType == "SPELL_CAST_SUCCESS" and spellID == 202137) then
+                -- Sigil of Silence --
+                if (TehrsCDs._interrupts_dhs == nil) then TehrsCDs._interrupts_dhs = { } end
+                if (TehrsCDs._interrupts_dhs[sourceName] == nil) then TehrsCDs._interrupts_dhs[sourceName] = { } end   
+                
+                local silence1 = TehrsCDs._interrupts_dhs[sourceName]["S-Silence+"];
+                local silence2 = TehrsCDs._interrupts_dhs[sourceName]["S-Silence"];
+                
+                if (silence1 ~= nil) then
+                    TehrsCDs._interrupts_dhs[sourceName]["S-Silence+"] = GetTime() + 48;
+                    TehrsCDs._interrupts_dhs[sourceName]["S-Silence"] = nil;
+                end
+                if (silence2 ~= nil) then
+                    TehrsCDs._interrupts_dhs[sourceName]["S-Silence"] = GetTime() + 60;
+                    TehrsCDs._interrupts_dhs[sourceName]["S-Silence+"] = nil;
+                end  
+                
+            elseif (eventType == "SPELL_CAST_SUCCESS" and spellID == 98008) then
+                -- Spirit Link Totem --
+                if (TehrsCDs._raidCDs_shamans == nil) then TehrsCDs._raidCDs_shamans = { } end        
+                if (TehrsCDs._raidCDs_shamans[sourceName] == nil) then TehrsCDs._raidCDs_shamans[sourceName] = { } end
+                
+                TehrsCDs._raidCDs_shamans[sourceName]["SLT"] = GetTime() + 180;  
+            end        ]]
+    end
+    
+end
