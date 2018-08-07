@@ -5,16 +5,14 @@ NEWS:
 		on Discord at Tehr#5246 or post a comment on wago.io/RaidCDs
 
 BUGS:
-    - Fixed some issues with improved abilities not displaying (Cap Totem, Shockwave, etc.)
-    - Added support for Grimoire of Sacrifice: Spell Lock
-    - Removed a few more references to Hunter Pet Rez
-    - Removed some references to Death Knight Raid CDS
-    - Fixed some issues that would cause translations not to display a complete button menu
+	- Currently the Battle Rez Timer does not work during a
+		raid encounter. Unfortunately, there's nothing I can
+		do about that for now, so Battle Rezzes will no
+		longer display outside of M+ dungeons
 	
 FEATURES:    
-    - Added Italian translation data 
-    - Added the option to hide empty sections (credit to Oaquasis)
-    - Added the option to only show abilities that are on cooldown (credit to Oaquasis)
+    - Slightly adjusted spacing on Battle Rez Timer
+	- Fixed some Italian translations
 
 	
 	
