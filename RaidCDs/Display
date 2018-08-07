@@ -1,0 +1,2402 @@
+function ()    
+    
+	local parentName = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]
+	if (parentName["TehrsRaidCDs"] == nil) then parentName["TehrsRaidCDs"] = {} end	
+	if (parentName["TehrsRaidCDs"]["Show Settings"] == nil) then parentName["TehrsRaidCDs"]["Show Settings"] = {} end
+	if (parentName["TehrsRaidCDs"]["Translation Settings"] == nil) then parentName["TehrsRaidCDs"]["Translation Settings"] = {} end	
+	if (parentName["TehrsRaidCDs"]["Translation Settings"]["frFR"] == nil) then parentName["TehrsRaidCDs"]["Translation Settings"]["frFR"] = {} end
+	if (parentName["TehrsRaidCDs"]["Translation Settings"]["zhCN"] == nil) then parentName["TehrsRaidCDs"]["Translation Settings"]["zhCN"] = {} end
+	if (parentName["TehrsRaidCDs"]["Translation Settings"]["zhTW"] == nil) then parentName["TehrsRaidCDs"]["Translation Settings"]["zhTW"] = {} end
+	if (parentName["TehrsRaidCDs"]["Translation Settings"]["deDE"] == nil) then parentName["TehrsRaidCDs"]["Translation Settings"]["deDE"] = {} end
+	if (parentName["TehrsRaidCDs"]["Translation Settings"]["ruRU"] == nil) then parentName["TehrsRaidCDs"]["Translation Settings"]["ruRU"] = {} end
+	if (parentName["TehrsRaidCDs"]["Translation Settings"]["koKR"] == nil) then parentName["TehrsRaidCDs"]["Translation Settings"]["koKR"] = {} end
+	if (parentName["TehrsRaidCDs"]["Translation Settings"]["esES"] == nil) then parentName["TehrsRaidCDs"]["Translation Settings"]["esES"] = {} end
+	if (parentName["TehrsRaidCDs"]["Translation Settings"]["itIT"] == nil) then parentName["TehrsRaidCDs"]["Translation Settings"]["itIT"] = {} end
+	local TehrsCDs = parentName["TehrsRaidCDs"]	
+
+    if (TehrsCDs._raidCDs_namesText == nil) then TehrsCDs._raidCDs_namesText = "" end
+	if (TehrsCDs._raidCDs_cdText == nil) then TehrsCDs._raidCDs_cdText = "" end
+	if (TehrsCDs._raidCDs_timeText == nil) then TehrsCDs._raidCDs_timeText = "" end	
+	if (TehrsCDs._raidCDs_groupPoll == nil) then TehrsCDs._raidCDs_groupPoll = GetTime() end 
+	if (TehrsCDs._raidCDs_textPoll == nil) then TehrsCDs._raidCDs_textPoll = GetTime() end
+	
+	aura_env.Supporters = aura_env.Supporters or { }
+	aura_env.pollRate = aura_env.pollRate or 2 
+	
+    local locale = GetLocale()
+    local titles = { }
+    local abilityNames
+	local CDText, timeText	
+	local CDTextAnchor, timeTextAnchor	
+    local region = aura_env.region
+	local backgroundName = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]["controlledChildren"][6]    
+	local backgroundFrameLevel = region.bar:GetFrameLevel()
+	local regionFrameLevel = region:GetFrameLevel()	
+	local point, relativeTo, relativePoint, xOffset, yOffset = region:GetPoint()
+    local fontName, fontSize, fontFlags = region.text:GetFont()
+	
+	if not TehrsCDs.minmaxDisplay and not aura_env.pollWhileHidden then
+		if region.namesText then region.namesText:SetText("") end
+		if region.timeText then region.timeText:SetText("") end
+		if region.CDText then region.CDText:SetText("") end
+		return ""
+	end	
+           
+    if (GetTime() - TehrsCDs._raidCDs_groupPoll > aura_env.pollRate) then 
+		
+		TehrsCDs._raidCDs_groupPoll = GetTime();
+		
+		if (InspectFrame ~= nil and InspectFrame:IsShown()) then if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: inspecting someone, ABORT") end return "" end
+		
+		if (TehrsCDs._raidCDs_groupPoll_state == nil) then TehrsCDs._raidCDs_groupPoll_state = "nextPlayer" if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: state is nil, moving to nextPlayer") end end
+		if (TehrsCDs._raidCDs_groupPoll_playerCounter == nil) then TehrsCDs._raidCDs_groupPoll_playerCounter = 0 if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: playerCounter is nil, setting to 0") end end
+		
+		local playerCount = GetNumGroupMembers();
+		local _, _, _, _, maxPlayers = GetInstanceInfo();
+		local _, instanceType = IsInInstance();
+		
+		if (instanceType ~= "none") then
+			playerCount = math.min(playerCount, maxPlayers);
+			if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: in an instance, setting playerCount") end
+		end    
+		
+		if (TehrsCDs._raidCDs_groupPoll_state=="pause") then
+			return ""
+		end
+		
+		if (TehrsCDs._raidCDs_groupPoll_state=="inspectPlayer") then   
+			
+			if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: state is inspectPlayer") end
+			
+			local playerName = TehrsCDs._raidCDs_groupPoll_currentPlayer
+			
+			if (not UnitInParty("player")) and (TehrsCDs._raidCDs_groupPoll_currentPlayer ~= UnitName("player")) then
+				playerName = UnitName("player")
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: not in party and currentPlayer ~= player, setting playerName to player") end
+			end
+			
+			if (not UnitInParty(playerName)) and playerName ~= UnitName("player") then
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: not in party and playerName ~= player, moving to nextPlayer") end
+				TehrsCDs._raidCDs_groupPoll_state = "nextPlayer";            
+				return "";
+			end
+			
+			local isPlayer = (playerName == UnitName("player"));
+			local spec;
+			local specName; 
+			
+			if (isPlayer) then         
+				spec = GetSpecialization();          
+			else
+				spec = GetInspectSpecialization(playerName);      
+			end        
+			
+			if (spec == nil) then
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: spec is nil") end
+				TehrsCDs._raidCDs_groupPoll_state = "nextPlayer";
+				return "";
+			end        
+			
+			if(isPlayer) then
+				specName = GetSpecializationInfo(spec);
+			else
+				local role = GetSpecializationRoleByID(spec);
+				if(role ~= nil) then
+					specName = GetSpecializationInfoByID(spec);
+				end            
+			end       
+			
+			local _, race = UnitRace(playerName)
+			local _, _, class = UnitClass(playerName); 
+			local activeSpec  = GetActiveSpecGroup(not isPlayer);        
+			
+			if (specName == nil) then
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: specName is nil") end
+				TehrsCDs._raidCDs_groupPoll_state = "nextPlayer";
+				return "";
+			end
+			
+			if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: set inspected player data, adding CDs") end
+			
+			--[[ if (race == "BloodElf") then
+				if TehrsCDs["Show Settings"].Torrent then
+					if (TehrsCDs._interrupts_belfs == nil) then TehrsCDs._interrupts_belfs = {} end
+					if (TehrsCDs._interrupts_belfs[playerName] == nil) then TehrsCDs._interrupts_belfs[playerName] = {} end        
+					
+					if (TehrsCDs._interrupts_belfs[playerName]["Torrent"] == nil) then
+						TehrsCDs._interrupts_belfs[playerName]["Torrent"] = GetTime();
+					end  
+				end            
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Blood Elf CD") end
+			else
+			
+			Arcane Torrent isn't an interrupt anymore! Holding onto this until I add dispels.
+			]]
+			
+			if (race == "Tauren") then
+				if TehrsCDs["Show Settings"].Stomp then
+					if (TehrsCDs._aoeCCs_tauren == nil) then TehrsCDs._aoeCCs_tauren = {} end
+					if (TehrsCDs._aoeCCs_tauren[playerName] == nil) then TehrsCDs._aoeCCs_tauren[playerName] = {} end        
+					
+					if (TehrsCDs._aoeCCs_tauren[playerName]["Stomp"] == nil) then
+						TehrsCDs._aoeCCs_tauren[playerName]["Stomp"] = GetTime();            
+					end
+				end
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Tauren CD") end
+			elseif (race == "HighmountainTauren") then
+				if TehrsCDs["Show Settings"].BullRush then
+					if (TehrsCDs._aoeCCs_hmtauren == nil) then TehrsCDs._aoeCCs_hmtauren = {} end
+					if (TehrsCDs._aoeCCs_hmtauren[playerName] == nil) then TehrsCDs._aoeCCs_hmtauren[playerName] = {} end        
+					
+					if (TehrsCDs._aoeCCs_hmtauren[playerName]["Bull Rush"] == nil) then
+						TehrsCDs._aoeCCs_hmtauren[playerName]["Bull Rush"] = GetTime();            
+					end
+				end
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Highmountain Tauren CD") end			
+			elseif (race == "NightElf") then
+				if TehrsCDs["Show Settings"].Shadowmeld then
+					if (TehrsCDs._utilityCDs_nightelf == nil) then TehrsCDs._utilityCDs_nightelf = {} end
+					if (TehrsCDs._utilityCDs_nightelf[playerName] == nil) then TehrsCDs._utilityCDs_nightelf[playerName] = {} end        
+					
+					if (TehrsCDs._utilityCDs_nightelf[playerName]["Shadowmeld"] == nil) then
+						TehrsCDs._utilityCDs_nightelf[playerName]["Shadowmeld"] = GetTime();            
+					end
+				end
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Night Elf CD") end				
+			end
+			
+			if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Races completed") end
+			
+			if (class == 1) then
+				if (TehrsCDs._raidCDs_warriors == nil) then TehrsCDs._raidCDs_warriors = {} end
+				if (TehrsCDs._raidCDs_warriors[playerName] == nil) then TehrsCDs._raidCDs_warriors[playerName] = {} end
+				if (TehrsCDs._externCDs_warriors == nil) then TehrsCDs._externCDs_warriors = {} end
+				if (TehrsCDs._externCDs_warriors[playerName] == nil) then TehrsCDs._externCDs_warriors[playerName] = {} end
+				if (TehrsCDs._interrupts_warriors == nil) then TehrsCDs._interrupts_warriors = {} end
+				if (TehrsCDs._interrupts_warriors[playerName] == nil) then TehrsCDs._interrupts_warriors[playerName] = {} end
+				if (TehrsCDs._aoeCCs_warriors == nil) then TehrsCDs._aoeCCs_warriors = {} end
+				if (TehrsCDs._aoeCCs_warriors[playerName] == nil) then TehrsCDs._aoeCCs_warriors[playerName] = {} end            
+				
+				if TehrsCDs["Show Settings"].Pummel then
+					if (TehrsCDs._interrupts_warriors[playerName]["Pummel"] == nil) then
+						TehrsCDs._interrupts_warriors[playerName]["Pummel"] = GetTime();
+					end
+				end
+				if TehrsCDs["Show Settings"].CShout then
+					if (TehrsCDs._raidCDs_warriors[playerName]["R-Cry"] == nil) then
+						TehrsCDs._raidCDs_warriors[playerName]["R-Cry"] = GetTime();
+					end       
+				end			
+				
+				if (specName == 73) then
+					local _, _, _, safeguardSpecced = GetTalentInfo(2, 3, activeSpec, not isPlayer, playerName);            
+					if (safeguardSpecced) then
+						if TehrsCDs["Show Settings"].Safeguard then
+							if (TehrsCDs._externCDs_warriors[playerName]["Safeguard"] == nil) then
+								TehrsCDs._externCDs_warriors[playerName]["Safeguard"] = GetTime();
+							end    
+						end    
+					else
+						TehrsCDs._externCDs_warriors[playerName]["Safeguard"] = nil;
+					end   
+					local _, _, _, shockwaveSpecced = GetTalentInfo(5, 2, activeSpec, not isPlayer, playerName);  
+					if (shockwaveSpecced) then     
+						if TehrsCDs["Show Settings"].Shockwave then
+							if (TehrsCDs._aoeCCs_warriors[playerName]["Shockwave+"] == nil) then
+								TehrsCDs._aoeCCs_warriors[playerName]["Shockwave+"] = GetTime();
+							end    
+						end
+						TehrsCDs._aoeCCs_warriors[playerName]["Shockwave"] = nil;                    
+					else
+						if TehrsCDs["Show Settings"].Shockwave then
+							if (TehrsCDs._aoeCCs_warriors[playerName]["Shockwave"] == nil) then
+								TehrsCDs._aoeCCs_warriors[playerName]["Shockwave"] = GetTime();
+							end    
+						end
+						TehrsCDs._aoeCCs_warriors[playerName]["Shockwave+"] = nil;
+					end                   
+				else       
+					TehrsCDs._aoeCCs_warriors[playerName]["Shockwave"] = nil;
+					TehrsCDs._aoeCCs_warriors[playerName]["Shockwave+"] = nil;
+					TehrsCDs._externCDs_warriors[playerName]["Safeguard"] = nil;   
+				end
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Warrior CDs") end
+			elseif (class == 5) then
+				if (TehrsCDs._raidCDs_priests == nil) then TehrsCDs._raidCDs_priests = {} end
+				if (TehrsCDs._raidCDs_priests[playerName] == nil) then TehrsCDs._raidCDs_priests[playerName] = {} end
+				if (TehrsCDs._externCDs_priests == nil) then TehrsCDs._externCDs_priests = {} end
+				if (TehrsCDs._externCDs_priests[playerName] == nil) then TehrsCDs._externCDs_priests[playerName] = {} end
+				if (TehrsCDs._interrupts_priests == nil) then TehrsCDs._interrupts_priests = {} end
+				if (TehrsCDs._interrupts_priests[playerName] == nil) then TehrsCDs._interrupts_priests[playerName] = {} end
+				if (TehrsCDs._utilityCDs_priests == nil) then TehrsCDs._utilityCDs_priests = {} end
+				if (TehrsCDs._utilityCDs_priests[playerName] == nil) then TehrsCDs._utilityCDs_priests[playerName] = {} end    
+				if (TehrsCDs._aoeCCs_priests == nil) then TehrsCDs._aoeCCs_priests = {} end
+				if (TehrsCDs._aoeCCs_priests[playerName] == nil) then TehrsCDs._aoeCCs_priests[playerName] = {} end            
+				
+				if TehrsCDs["Show Settings"].Grip then
+					if (TehrsCDs._utilityCDs_priests[playerName]["Grip"] == nil) then
+						TehrsCDs._utilityCDs_priests[playerName]["Grip"] = GetTime();
+					end    
+				end			
+				
+				if (specName == 257) then
+					if TehrsCDs["Show Settings"].Hope then
+						if (TehrsCDs._utilityCDs_priests[playerName]["Hope"] == nil) then
+							TehrsCDs._utilityCDs_priests[playerName]["Hope"] = GetTime();
+						end          
+					end
+					local _, _, _, shiningSpecced = GetTalentInfo(4, 3, activeSpec, not isPlayer, playerName);  
+					if (shiningSpecced) then  
+						if TehrsCDs["Show Settings"].Shining then
+							if (TehrsCDs._aoeCCs_priests[playerName]["Shining"] == nil) then
+								TehrsCDs._aoeCCs_priests[playerName]["Shining"] = GetTime();
+							end          
+						end
+					else
+						TehrsCDs._aoeCCs_priests[playerName]["Shining"] = nil;
+					end				
+					local _, _, _, salvationSpecced = GetTalentInfo(7, 3, activeSpec, not isPlayer, playerName);  
+					if (salvationSpecced) then  
+						if TehrsCDs["Show Settings"].Salvation then
+							if (TehrsCDs._raidCDs_priests[playerName]["Salvation"] == nil) then
+								TehrsCDs._raidCDs_priests[playerName]["Salvation"] = GetTime();
+							end          
+						end
+					else
+						TehrsCDs._raidCDs_priests[playerName]["Salvation"] = nil;
+					end	
+					local _, _, _, apotheosisSpecced = GetTalentInfo(7, 2, activeSpec, not isPlayer, playerName);  
+					if (apotheosisSpecced) then  
+						if TehrsCDs["Show Settings"].Apotheosis then
+							if (TehrsCDs._raidCDs_priests[playerName]["Apotheosis"] == nil) then
+								TehrsCDs._raidCDs_priests[playerName]["Apotheosis"] = GetTime();
+							end          
+						end
+					else
+						TehrsCDs._raidCDs_priests[playerName]["Apotheosis"] = nil;
+					end					
+					local _, _, _, guardianAngelSpecced = GetTalentInfo(3, 2, activeSpec, not isPlayer, playerName);  
+					if (guardianAngelSpecced) then     
+						if TehrsCDs["Show Settings"].GSpirit then
+							if (TehrsCDs._externCDs_priests[playerName]["G-Spirit+"] == nil) then
+								TehrsCDs._externCDs_priests[playerName]["G-Spirit+"] = GetTime();
+							end    
+						end
+						TehrsCDs._externCDs_priests[playerName]["G-Spirit"] = nil;                    
+					else
+						if TehrsCDs["Show Settings"].GSpirit then
+							if (TehrsCDs._externCDs_priests[playerName]["G-Spirit"] == nil) then
+								TehrsCDs._externCDs_priests[playerName]["G-Spirit"] = GetTime();
+							end    
+						end
+						TehrsCDs._externCDs_priests[playerName]["G-Spirit+"] = nil;
+					end   
+					if TehrsCDs["Show Settings"].DHymn then
+						if (TehrsCDs._raidCDs_priests[playerName]["D-Hymn"] == nil) then
+							TehrsCDs._raidCDs_priests[playerName]["D-Hymn"] = GetTime();
+						end 
+					end
+					TehrsCDs._interrupts_priests[playerName]["Silence"] = nil;
+					TehrsCDs._interrupts_priests[playerName]["Silence+"] = nil;
+					TehrsCDs._raidCDs_priests[playerName]["Rapture"] = nil;
+					TehrsCDs._raidCDs_priests[playerName]["VE"] = nil;  
+					TehrsCDs._raidCDs_priests[playerName]["VE+"] = nil;  
+					TehrsCDs._raidCDs_priests[playerName]["Barrier"] = nil;
+					TehrsCDs._raidCDs_priests[playerName]["Barrier+"] = nil;
+					TehrsCDs._externCDs_priests[playerName]["P-Sup"] = nil;
+					TehrsCDs._aoeCCs_priests[playerName]["Mind Bomb"] = nil;                
+				elseif (specName == 256) then    
+					local _, _, _, shiningSpecced = GetTalentInfo(4, 3, activeSpec, not isPlayer, playerName);  
+					if (shiningSpecced) then  
+						if TehrsCDs["Show Settings"].Shining then
+							if (TehrsCDs._aoeCCs_priests[playerName]["Shining"] == nil) then
+								TehrsCDs._aoeCCs_priests[playerName]["Shining"] = GetTime();
+							end          
+						end
+					else
+						TehrsCDs._aoeCCs_priests[playerName]["Shining"] = nil;
+					end					
+					local _, _, _,barrierSpecced = GetTalentInfo(7, 2, activeSpec, not isPlayer, playerName);  
+					if (barrierSpecced) then     
+						if TehrsCDs["Show Settings"].VE then
+							if (TehrsCDs._raidCDs_priests[playerName]["Barrier+"] == nil) then
+								TehrsCDs._raidCDs_priests[playerName]["Barrier+"] = GetTime();
+							end    
+						end
+						TehrsCDs._raidCDs_priests[playerName]["Barrier"] = nil;                    
+					else
+						if TehrsCDs["Show Settings"].VE then
+							if (TehrsCDs._raidCDs_priests[playerName]["Barrier"] == nil) then
+								TehrsCDs._raidCDs_priests[playerName]["Barrier"] = GetTime();
+							end    
+						end
+						TehrsCDs._raidCDs_priests[playerName]["Barrier+"] = nil;
+					end  
+					if TehrsCDs["Show Settings"].Rapture then
+						if (TehrsCDs._raidCDs_priests[playerName]["Rapture"] == nil) then
+							TehrsCDs._raidCDs_priests[playerName]["Rapture"] = GetTime();
+						end    
+					end		
+					if TehrsCDs["Show Settings"].PSup then
+						if (TehrsCDs._externCDs_priests[playerName]["P-Sup"] == nil) then
+							TehrsCDs._externCDs_priests[playerName]["P-Sup"] = GetTime();
+						end    
+					end				
+					TehrsCDs._interrupts_priests[playerName]["Silence"] = nil;
+					TehrsCDs._interrupts_priests[playerName]["Silence+"] = nil;
+					TehrsCDs._raidCDs_priests[playerName]["VE"] = nil;  
+					TehrsCDs._raidCDs_priests[playerName]["VE+"] = nil;  
+					TehrsCDs._raidCDs_priests[playerName]["D-Hymn"] = nil;
+					TehrsCDs._raidCDs_priests[playerName]["Apotheosis"] = nil;
+					TehrsCDs._raidCDs_priests[playerName]["Salvation"] = nil;
+					TehrsCDs._externCDs_priests[playerName]["G-Spirit+"] = nil;
+					TehrsCDs._externCDs_priests[playerName]["G-Spirit"] = nil;
+					TehrsCDs._utilityCDs_priests[playerName]["Hope"] = nil;
+					TehrsCDs._aoeCCs_priests[playerName]["Mind Bomb"] = nil;
+				elseif (specName == 258) then
+					local _, _, _, veSpecced = GetTalentInfo(2, 2, activeSpec, not isPlayer, playerName);  
+					if (veSpecced) then     
+						if TehrsCDs["Show Settings"].VE then
+							if (TehrsCDs._raidCDs_priests[playerName]["VE+"] == nil) then
+								TehrsCDs._raidCDs_priests[playerName]["VE+"] = GetTime();
+							end    
+						end
+						TehrsCDs._raidCDs_priests[playerName]["VE"] = nil;                    
+					else
+						if TehrsCDs["Show Settings"].VE then
+							if (TehrsCDs._raidCDs_priests[playerName]["VE"] == nil) then
+								TehrsCDs._raidCDs_priests[playerName]["VE"] = GetTime();
+							end    
+						end
+						TehrsCDs._raidCDs_priests[playerName]["VE+"] = nil;
+					end  
+					local _, _, _, silenceSpecced = GetTalentInfo(4, 1, activeSpec, not isPlayer, playerName);  
+					if (silenceSpecced) then     
+						if TehrsCDs["Show Settings"].Silence then
+							if (TehrsCDs._interrupts_priests[playerName]["Silence+"] == nil) then
+								TehrsCDs._interrupts_priests[playerName]["Silence+"] = GetTime();
+							end    
+						end
+						TehrsCDs._interrupts_priests[playerName]["Silence"] = nil;                    
+					else
+						if TehrsCDs["Show Settings"].Silence then
+							if (TehrsCDs._interrupts_priests[playerName]["Silence"] == nil) then
+								TehrsCDs._interrupts_priests[playerName]["Silence"] = GetTime();
+							end    
+						end
+						TehrsCDs._interrupts_priests[playerName]["Silence+"] = nil;
+					end  				
+					local _, _, _, mindBombSpecced = GetTalentInfo(4, 2, activeSpec, not isPlayer, playerName);  
+					if (mindBombSpecced) then                
+						if TehrsCDs["Show Settings"].MindBomb then
+							if (TehrsCDs._aoeCCs_priests[playerName]["Mind Bomb"] == nil) then
+								TehrsCDs._aoeCCs_priests[playerName]["Mind Bomb"] = GetTime();
+							end
+						end
+					else
+						TehrsCDs._aoeCCs_priests[playerName]["Mind Bomb"] = nil;
+					end   
+					TehrsCDs._aoeCCs_priests[playerName]["Shining"] = nil;
+					TehrsCDs._raidCDs_priests[playerName]["Rapture"] = nil;
+					TehrsCDs._raidCDs_priests[playerName]["Barrier"] = nil;
+					TehrsCDs._raidCDs_priests[playerName]["Barrier+"] = nil;
+					TehrsCDs._raidCDs_priests[playerName]["D-Hymn"] = nil;   
+					TehrsCDs._raidCDs_priests[playerName]["Apotheosis"] = nil;
+					TehrsCDs._raidCDs_priests[playerName]["Salvation"] = nil;
+					TehrsCDs._externCDs_priests[playerName]["G-Spirit+"] = nil;
+					TehrsCDs._externCDs_priests[playerName]["P-Sup"] = nil;                
+					TehrsCDs._externCDs_priests[playerName]["G-Spirit"] = nil;
+					TehrsCDs._utilityCDs_priests[playerName]["Hope"] = nil;                
+				end
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Priest CDs") end
+			elseif (class == 12) then
+				if (TehrsCDs._raidCDs_dhs == nil) then TehrsCDs._raidCDs_dhs = {} end
+				if (TehrsCDs._raidCDs_dhs[playerName] == nil) then TehrsCDs._raidCDs_dhs[playerName] = {} end
+				if (TehrsCDs._externCDs_dhs == nil) then TehrsCDs._externCDs_dhs = {} end
+				if (TehrsCDs._externCDs_dhs[playerName] == nil) then TehrsCDs._externCDs_dhs[playerName] = {} end
+				if (TehrsCDs._interrupts_dhs == nil) then TehrsCDs._interrupts_dhs = {} end
+				if (TehrsCDs._interrupts_dhs[playerName] == nil) then TehrsCDs._interrupts_dhs[playerName] = {} end
+				if (TehrsCDs._utilityCDs_dhs == nil) then TehrsCDs._utilityCDs_dhs = {} end
+				if (TehrsCDs._utilityCDs_dhs[playerName] == nil) then TehrsCDs._utilityCDs_dhs[playerName] = {} end       
+				if (TehrsCDs._aoeCCs_dhs == nil) then TehrsCDs._aoeCCs_dhs = {} end
+				if (TehrsCDs._aoeCCs_dhs[playerName] == nil) then TehrsCDs._aoeCCs_dhs[playerName] = {} end
+				if (TehrsCDs._immunityCDs_dhs == nil) then TehrsCDs._immunityCDs_dhs = {} end
+				if (TehrsCDs._immunityCDs_dhs[playerName] == nil) then TehrsCDs._immunityCDs_dhs[playerName] = {} end                 
+				
+				if TehrsCDs["Show Settings"].Disrupt then
+					if (TehrsCDs._interrupts_dhs[playerName]["Disrupt"] == nil) then
+						TehrsCDs._interrupts_dhs[playerName]["Disrupt"] = GetTime();
+					end     
+				end
+				
+				if (specName == 581) then        
+					local _, _, _, chainsSpecced = GetTalentInfo(5, 3, activeSpec, not isPlayer, playerName);  
+					if (chainsSpecced)then      
+						if TehrsCDs["Show Settings"].Chains then
+							if (TehrsCDs._aoeCCs_dhs[playerName]["Chains"] == nil) then
+								TehrsCDs._aoeCCs_dhs[playerName]["Chains"] = GetTime();
+							end  
+						end
+					else
+						TehrsCDs._aoeCCs_dhs[playerName]["Chains"] = nil;                    
+					end 
+					local _, _, _, improvedSilenceSpecced = GetTalentInfo(5, 2, activeSpec, not isPlayer, playerName);  
+					if (improvedSilenceSpecced)then   
+						if TehrsCDs["Show Settings"].SigilSilence then
+							if (TehrsCDs._interrupts_dhs[playerName]["S-Silence+"] == nil) then
+								TehrsCDs._interrupts_dhs[playerName]["S-Silence+"] = GetTime();
+							end  
+						end
+						TehrsCDs._interrupts_dhs[playerName]["S-Silence"] = nil;   
+					else
+						if TehrsCDs["Show Settings"].SigilSilence then
+							if (TehrsCDs._interrupts_dhs[playerName]["S-Silence"] == nil) then
+								TehrsCDs._interrupts_dhs[playerName]["S-Silence"] = GetTime();
+							end  
+						end
+						TehrsCDs._interrupts_dhs[playerName]["S-Silence+"] = nil;                      
+					end 
+					TehrsCDs._raidCDs_dhs[playerName]["Darkness"] = nil
+					TehrsCDs._aoeCCs_dhs[playerName]["Nova"] = nil;          
+					TehrsCDs._aoeCCs_dhs[playerName]["Nova+"] = nil; 
+					TehrsCDs._immunityCDs_dhs[playerName]["Netherwalk"] = nil;
+				elseif (specName == 577) then
+					local _, _, _, improvedNovaSpecced = GetTalentInfo(6, 1, activeSpec, not isPlayer, playerName);  
+					if (improvedNovaSpecced)then   
+						if TehrsCDs["Show Settings"].Nova then
+							if (TehrsCDs._aoeCCs_dhs[playerName]["Nova+"] == nil) then
+								TehrsCDs._aoeCCs_dhs[playerName]["Nova+"] = GetTime();
+							end  
+						end
+						TehrsCDs._aoeCCs_dhs[playerName]["Nova"] = nil;   
+					else
+						if TehrsCDs["Show Settings"].Nova then
+							if (TehrsCDs._aoeCCs_dhs[playerName]["Nova"] == nil) then
+								TehrsCDs._aoeCCs_dhs[playerName]["Nova"] = GetTime();
+							end  
+						end
+						TehrsCDs._aoeCCs_dhs[playerName]["Nova+"] = nil;                      
+					end 
+					local _, _, _, netherwalkSpecced = GetTalentInfo(4, 3, activeSpec, not isPlayer, playerName);  
+					if (netherwalkSpecced)then  
+						if TehrsCDs["Show Settings"].Netherwalk then
+							if (TehrsCDs._immunityCDs_dhs[playerName]["Netherwalk"] == nil) then
+								TehrsCDs._immunityCDs_dhs[playerName]["Netherwalk"] = GetTime(); 
+							end
+						end
+					else  
+						TehrsCDs._immunityCDs_dhs[playerName]["Netherwalk"] = nil; 
+					end     
+					if TehrsCDs["Show Settings"].Darkness then
+						if (TehrsCDs._raidCDs_dhs[playerName]["Darkness"] == nil) then
+							TehrsCDs._raidCDs_dhs[playerName]["Darkness"] = GetTime();
+						end 
+					end
+					TehrsCDs._aoeCCs_dhs[playerName]["Chains"] = nil;    
+					TehrsCDs._interrupts_dhs[playerName]["S-Silence+"] = nil;
+					TehrsCDs._interrupts_dhs[playerName]["S-Silence"] = nil;
+				end
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added DH CDs") end
+			elseif (class == 11) then
+				if (TehrsCDs._raidCDs_druids == nil) then TehrsCDs._raidCDs_druids = {} end
+				if (TehrsCDs._raidCDs_druids[playerName] == nil) then TehrsCDs._raidCDs_druids[playerName] = {} end
+				if (TehrsCDs._externCDs_druids == nil) then TehrsCDs._externCDs_druids = {} end
+				if (TehrsCDs._externCDs_druids[playerName] == nil) then TehrsCDs._externCDs_druids[playerName] = {} end
+				if (TehrsCDs._interrupts_druids == nil) then TehrsCDs._interrupts_druids = {} end
+				if (TehrsCDs._interrupts_druids[playerName] == nil) then TehrsCDs._interrupts_druids[playerName] = {} end
+				if (TehrsCDs._utilityCDs_druids == nil) then TehrsCDs._utilityCDs_druids = {} end
+				if (TehrsCDs._utilityCDs_druids[playerName] == nil) then TehrsCDs._utilityCDs_druids[playerName] = {} end     
+				if (TehrsCDs._rezCDs_druids == nil) then TehrsCDs._rezCDs_druids = {} end
+				if (TehrsCDs._rezCDs_druids[playerName] == nil) then TehrsCDs._rezCDs_druids[playerName] = {} end  
+				if (TehrsCDs._aoeCCs_druids == nil) then TehrsCDs._aoeCCs_druids = {} end
+				if (TehrsCDs._aoeCCs_druids[playerName] == nil) then TehrsCDs._aoeCCs_druids[playerName] = {} end            
+				
+				if TehrsCDs["Show Settings"].Rebirth then
+					if (TehrsCDs._rezCDs_druids[playerName]["Rebirth"] == nil) then
+						TehrsCDs._rezCDs_druids[playerName]["Rebirth"] = GetTime();
+					end    
+				end
+				
+				local _, _, _, typhoonSpecced = GetTalentInfo(4, 3, activeSpec, not isPlayer, playerName); 
+				if (typhoonSpecced)then
+					if TehrsCDs["Show Settings"].Typhoon then 
+						if (TehrsCDs._aoeCCs_druids[playerName]["Typhoon"] == nil) then
+							TehrsCDs._aoeCCs_druids[playerName]["Typhoon"] = GetTime();
+						end 
+					end        
+				else
+					TehrsCDs._aoeCCs_druids[playerName]["Typhoon"] = nil; 
+				end            
+				
+				if (specName == 105) then
+					local _, _, _, innerPeaceSpecced = GetTalentInfo(6, 1, activeSpec, not isPlayer, playerName);  
+					if (innerPeaceSpecced) then                
+						if TehrsCDs["Show Settings"].Tranq then
+							if (TehrsCDs._raidCDs_druids[playerName]["Tranq+"] == nil) then
+								TehrsCDs._raidCDs_druids[playerName]["Tranq+"] = GetTime();
+							end  
+						end
+						TehrsCDs._raidCDs_druids[playerName]["Tranq"] = nil;                        
+					else
+						if TehrsCDs["Show Settings"].Tranq then
+							if (TehrsCDs._raidCDs_druids[playerName]["Tranq"] == nil) then
+								TehrsCDs._raidCDs_druids[playerName]["Tranq"] = GetTime();
+							end  
+						end
+						TehrsCDs._raidCDs_druids[playerName]["Tranq+"] = nil;
+					end
+					local _, _, _, ironbarkSpecced = GetTalentInfo(6, 2, activeSpec, not isPlayer, playerName); 
+					if (ironbarkSpecced)then
+						if TehrsCDs["Show Settings"].IBark then 
+							if (TehrsCDs._externCDs_druids[playerName]["I-Bark+"] == nil) then
+								TehrsCDs._externCDs_druids[playerName]["I-Bark+"] = GetTime();
+							end 
+						end
+						TehrsCDs._externCDs_druids[playerName]["I-Bark"] = nil;                                        
+					else
+						if TehrsCDs["Show Settings"].IBark then
+							if (TehrsCDs._externCDs_druids[playerName]["I-Bark"] == nil) then
+								TehrsCDs._externCDs_druids[playerName]["I-Bark"] = GetTime();
+							end 
+						end
+						TehrsCDs._externCDs_druids[playerName]["I-Bark+"] = nil;                    
+					end   	
+					local _, _, _, flourishSpecced = GetTalentInfo(7, 3, activeSpec, not isPlayer, playerName); 
+					if (flourishSpecced)then
+						if TehrsCDs["Show Settings"].Flourish then 
+							if (TehrsCDs._raidCDs_druids[playerName]["Flourish"] == nil) then
+								TehrsCDs._raidCDs_druids[playerName]["Flourish"] = GetTime();
+							end 
+						end                                       
+					else
+						TehrsCDs._raidCDs_druids[playerName]["Flourish"] = nil;                    
+					end 				
+					if TehrsCDs["Show Settings"].Innervate then
+						if (TehrsCDs._utilityCDs_druids[playerName]["Innervate"] == nil) then
+							TehrsCDs._utilityCDs_druids[playerName]["Innervate"] = GetTime();
+						end  
+					end                
+					if TehrsCDs["Show Settings"].Ursol then
+						if (TehrsCDs._aoeCCs_druids[playerName]["Ursol"] == nil) then
+							TehrsCDs._aoeCCs_druids[playerName]["Ursol"] = GetTime();
+						end           
+					end                
+					TehrsCDs._interrupts_druids[playerName]["S-Bash"] = nil;                
+					TehrsCDs._interrupts_druids[playerName]["S-Beam"] = nil;  
+					TehrsCDs._utilityCDs_druids[playerName]["Roar"] = nil;    
+					TehrsCDs._utilityCDs_druids[playerName]["Treants"] = nil;
+				elseif (specName == 102) then
+					if TehrsCDs["Show Settings"].SBeam then
+						if (TehrsCDs._interrupts_druids[playerName]["S-Beam"] == nil) then
+							TehrsCDs._interrupts_druids[playerName]["S-Beam"] = GetTime();
+						end  
+					end
+					if TehrsCDs["Show Settings"].Innervate then
+						if (TehrsCDs._utilityCDs_druids[playerName]["Innervate"] == nil) then
+							TehrsCDs._utilityCDs_druids[playerName]["Innervate"] = GetTime();
+						end  
+					end     			
+					local _, _, _, treantsSpecced = GetTalentInfo(1, 3, activeSpec, not isPlayer, playerName);  
+					if (treantsSpecced)then      
+						if TehrsCDs["Show Settings"].Treants then
+							if (TehrsCDs._utilityCDs_druids[playerName]["Treants"] == nil) then
+								TehrsCDs._utilityCDs_druids[playerName]["Treants"] = GetTime();
+							end      
+						end                                    
+					else
+						TehrsCDs._utilityCDs_druids[playerName]["Treants"] = nil;    
+					end				
+					TehrsCDs._interrupts_druids[playerName]["S-Bash"] = nil;  
+					TehrsCDs._aoeCCs_druids[playerName]["Ursol"] = nil;
+					TehrsCDs._raidCDs_druids[playerName]["Tranq+"] = nil;
+					TehrsCDs._raidCDs_druids[playerName]["Tranq"] = nil;        
+					TehrsCDs._externCDs_druids[playerName]["I-Bark+"] = nil;    
+					TehrsCDs._externCDs_druids[playerName]["I-Bark"] = nil;      
+					TehrsCDs._raidCDs_druids[playerName]["Flourish"] = nil;  				
+					TehrsCDs._utilityCDs_druids[playerName]["Roar"] = nil;      				
+				else
+					if TehrsCDs["Show Settings"].Roar then
+						if (TehrsCDs._utilityCDs_druids[playerName]["Roar"] == nil) then
+							TehrsCDs._utilityCDs_druids[playerName]["Roar"] = GetTime();
+						end
+					end
+					if TehrsCDs["Show Settings"].SBash then
+						if (TehrsCDs._interrupts_druids[playerName]["S-Bash"] == nil) then
+							TehrsCDs._interrupts_druids[playerName]["S-Bash"] = GetTime();
+						end 
+					end   
+					TehrsCDs._interrupts_druids[playerName]["S-Beam"] = nil; 
+					TehrsCDs._raidCDs_druids[playerName]["Tranq+"] = nil;
+					TehrsCDs._raidCDs_druids[playerName]["Tranq"] = nil;    
+					TehrsCDs._externCDs_druids[playerName]["I-Bark+"] = nil;    
+					TehrsCDs._externCDs_druids[playerName]["I-Bark"] = nil;        
+					TehrsCDs._utilityCDs_druids[playerName]["Innervate"] = nil;  
+					TehrsCDs._aoeCCs_druids[playerName]["Ursol"] = nil;
+					TehrsCDs._utilityCDs_druids[playerName]["Treants"] = nil;
+					TehrsCDs._raidCDs_druids[playerName]["Flourish"] = nil;  
+				end   
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Druid CDs") end
+			elseif (class == 6) then
+				if (TehrsCDs._aoeCCs_dks == nil) then TehrsCDs._aoeCCs_dks = {} end
+				if (TehrsCDs._aoeCCs_dks[playerName] == nil) then TehrsCDs._aoeCCs_dks[playerName] = {} end
+				if (TehrsCDs._interrupts_dks == nil) then TehrsCDs._interrupts_dks = {} end
+				if (TehrsCDs._interrupts_dks[playerName] == nil) then TehrsCDs._interrupts_dks[playerName] = {} end
+				if (TehrsCDs._rezCDs_dks == nil) then TehrsCDs._rezCDs_dks = {} end
+				if (TehrsCDs._rezCDs_dks[playerName] == nil) then TehrsCDs._rezCDs_dks[playerName] = {} end         			
+				
+				if TehrsCDs["Show Settings"].RaiseAlly then
+					if (TehrsCDs._rezCDs_dks[playerName]["Raise Ally"] == nil) then
+						TehrsCDs._rezCDs_dks[playerName]["Raise Ally"] = GetTime();
+					end 
+				end            
+				
+				if TehrsCDs["Show Settings"].MindFreeze then
+					if (TehrsCDs._interrupts_dks[playerName]["M-Freeze"] == nil) then
+						TehrsCDs._interrupts_dks[playerName]["M-Freeze"] = GetTime();
+					end  
+				end
+				
+				if (specName == 250) then
+					local _, _, _, tighteningGraspSpecced = GetTalentInfo(5, 2, activeSpec, not isPlayer, playerName);  
+					if (tighteningGraspSpecced)then  
+						if TehrsCDs["Show Settings"].Grasp then
+							if (TehrsCDs._aoeCCs_dks[playerName]["Grasp+"] == nil) then
+								TehrsCDs._aoeCCs_dks[playerName]["Grasp+"] = GetTime();
+							end  
+						end
+						TehrsCDs._aoeCCs_dks[playerName]["Grasp"] = nil;                        
+					else
+						if TehrsCDs["Show Settings"].Grasp then
+							if (TehrsCDs._aoeCCs_dks[playerName]["Grasp"] == nil) then
+								TehrsCDs._aoeCCs_dks[playerName]["Grasp"] = GetTime();
+							end  
+						end
+						TehrsCDs._aoeCCs_dks[playerName]["Grasp+"] = nil;
+					end
+				else  
+					TehrsCDs._aoeCCs_dks[playerName]["Grasp+"] = nil;
+					TehrsCDs._aoeCCs_dks[playerName]["Grasp"] = nil;                  
+				end               
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added DK CDs") end
+			elseif (class == 2) then
+				if (TehrsCDs._raidCDs_paladins == nil) then TehrsCDs._raidCDs_paladins = {} end
+				if (TehrsCDs._raidCDs_paladins[playerName] == nil) then TehrsCDs._raidCDs_paladins[playerName] = {} end
+				if (TehrsCDs._externCDs_paladins == nil) then TehrsCDs._externCDs_paladins = {} end
+				if (TehrsCDs._externCDs_paladins[playerName] == nil) then TehrsCDs._externCDs_paladins[playerName] = {} end
+				if (TehrsCDs._interrupts_paladins == nil) then TehrsCDs._interrupts_paladins = {} end
+				if (TehrsCDs._interrupts_paladins[playerName] == nil) then TehrsCDs._interrupts_paladins[playerName] = {} end        
+				if (TehrsCDs._utilityCDs_paladins == nil) then TehrsCDs._utilityCDs_paladins = {} end
+				if (TehrsCDs._utilityCDs_paladins[playerName] == nil) then TehrsCDs._utilityCDs_paladins[playerName] = {} end     
+				if (TehrsCDs._immunityCDs_paladins == nil) then TehrsCDs._immunityCDs_paladins = {} end
+				if (TehrsCDs._immunityCDs_paladins[playerName] == nil) then TehrsCDs._immunityCDs_paladins[playerName] = {} end             
+				
+				
+				if (TehrsCDs["Show Settings"].BoPUtility) then -- Sets BoP as a Utility CD
+					TehrsCDs._externCDs_paladins[playerName]["BoP"] = nil;                         
+					if (specName == 66) then
+						local _, _, _, spellwardSpecced = GetTalentInfo(4, 3, activeSpec, not isPlayer, playerName);  
+						if (spellwardSpecced)then   
+							if TehrsCDs["Show Settings"].Spellward then
+								if (TehrsCDs._externCDs_paladins[playerName]["Spellward"] == nil) then
+									TehrsCDs._externCDs_paladins[playerName]["Spellward"] = GetTime();
+								end  
+							end
+							TehrsCDs._utilityCDs_paladins[playerName]["BoP"] = nil;                    
+						else
+							if TehrsCDs["Show Settings"].BoP then 
+								if (TehrsCDs._utilityCDs_paladins[playerName]["BoP"] == nil) then
+									TehrsCDs._utilityCDs_paladins[playerName]["BoP"] = GetTime();
+								end  
+							end
+							TehrsCDs._externCDs_paladins[playerName]["Spellward"] = nil;
+						end                         
+					else
+						if TehrsCDs["Show Settings"].BoP then 
+							if (TehrsCDs._utilityCDs_paladins[playerName]["BoP"] == nil) then
+								TehrsCDs._utilityCDs_paladins[playerName]["BoP"] = GetTime();
+							end  
+						end
+						TehrsCDs._externCDs_paladins[playerName]["Spellward"] = nil;					
+					end                        
+				else -- Sets BoP as an External CD
+					TehrsCDs._utilityCDs_paladins[playerName]["BoP"] = nil;                         
+					if (specName == 66) then
+						local _, _, _, spellwardSpecced = GetTalentInfo(4, 3, activeSpec, not isPlayer, playerName);  
+						if (spellwardSpecced)then   
+							if TehrsCDs["Show Settings"].Spellward then
+								if (TehrsCDs._externCDs_paladins[playerName]["Spellward"] == nil) then
+									TehrsCDs._externCDs_paladins[playerName]["Spellward"] = GetTime();
+								end  
+							end
+							TehrsCDs._externCDs_paladins[playerName]["BoP"] = nil;                    
+						else
+							if TehrsCDs["Show Settings"].BoP then 
+								if (TehrsCDs._externCDs_paladins[playerName]["BoP"] == nil) then
+									TehrsCDs._externCDs_paladins[playerName]["BoP"] = GetTime();
+								end  
+							end
+							TehrsCDs._externCDs_paladins[playerName]["Spellward"] = nil;
+						end                         
+					else
+						if TehrsCDs["Show Settings"].BoP then 
+							if (TehrsCDs._externCDs_paladins[playerName]["BoP"] == nil) then
+								TehrsCDs._externCDs_paladins[playerName]["BoP"] = GetTime();
+							end  
+						end
+						TehrsCDs._externCDs_paladins[playerName]["Spellward"] = nil;
+					end            
+				end
+				
+				
+				if (specName == 65) then
+					local _, _, _, holyBubbleSpecced = GetTalentInfo(2, 1, activeSpec, not isPlayer, playerName);  
+					if (holyBubbleSpecced)then     
+						if TehrsCDs["Show Settings"].Bubble then
+							if (TehrsCDs._immunityCDs_paladins[playerName]["Bubble+"] == nil) then
+								TehrsCDs._immunityCDs_paladins[playerName]["Bubble+"] = GetTime();
+							end  
+						end
+						if TehrsCDs["Show Settings"].LoH then
+							if (TehrsCDs._externCDs_paladins[playerName]["LoH+"] == nil) then
+								TehrsCDs._externCDs_paladins[playerName]["LoH+"] = GetTime();
+							end 
+						end					
+						TehrsCDs._externCDs_paladins[playerName]["LoH"] = nil;
+						TehrsCDs._immunityCDs_paladins[playerName]["Bubble"] = nil;                        
+					else
+						if TehrsCDs["Show Settings"].Bubble then
+							if (TehrsCDs._immunityCDs_paladins[playerName]["Bubble"] == nil) then
+								TehrsCDs._immunityCDs_paladins[playerName]["Bubble"] = GetTime();
+							end  
+						end
+						if TehrsCDs["Show Settings"].LoH then
+							if (TehrsCDs._externCDs_paladins[playerName]["LoH"] == nil) then
+								TehrsCDs._externCDs_paladins[playerName]["LoH"] = GetTime();
+							end 
+						end			
+						TehrsCDs._externCDs_paladins[playerName]["LoH+"] = nil;					
+						TehrsCDs._immunityCDs_paladins[playerName]["Bubble+"] = nil;
+					end                        
+					if TehrsCDs["Show Settings"].Sac then
+						if (TehrsCDs._externCDs_paladins[playerName]["Sac"] == nil) then
+							TehrsCDs._externCDs_paladins[playerName]["Sac"] = GetTime();
+						end  
+					end
+					if TehrsCDs["Show Settings"].AuraM then
+						if (TehrsCDs._raidCDs_paladins[playerName]["Aura-M"] == nil) then
+							TehrsCDs._raidCDs_paladins[playerName]["Aura-M"] = GetTime();
+						end              
+					end
+					local _, _, _, crusaderSpecced = GetTalentInfo(6, 2, activeSpec, not isPlayer, playerName);  
+					if (crusaderSpecced)then   
+						if TehrsCDs["Show Settings"].Wings then
+							if (TehrsCDs._raidCDs_paladins[playerName]["Wings+"] == nil) then
+								TehrsCDs._raidCDs_paladins[playerName]["Wings+"] = GetTime();
+							end  
+						end
+						TehrsCDs._raidCDs_paladins[playerName]["Wings"] = nil;                        
+					else
+						if TehrsCDs["Show Settings"].Wings then
+							if (TehrsCDs._raidCDs_paladins[playerName]["Wings"] == nil) then
+								TehrsCDs._raidCDs_paladins[playerName]["Wings"] = GetTime();
+							end  
+						end				
+						TehrsCDs._raidCDs_paladins[playerName]["Wings+"] = nil;
+					end 	
+					TehrsCDs._raidCDs_paladins[playerName]["Aegis"] = nil;  
+					TehrsCDs._interrupts_paladins[playerName]["Rebuke"] = nil;
+				elseif (specName == 70) then
+					local _, _, _, retBubbleSpecced = GetTalentInfo(5, 1, activeSpec, not isPlayer, playerName);  
+					if (retBubbleSpecced)then   
+						if TehrsCDs["Show Settings"].Bubble then
+							if (TehrsCDs._immunityCDs_paladins[playerName]["Bubble+"] == nil) then
+								TehrsCDs._immunityCDs_paladins[playerName]["Bubble+"] = GetTime();
+							end  
+						end
+						if TehrsCDs["Show Settings"].LoH then
+							if (TehrsCDs._externCDs_paladins[playerName]["LoH+"] == nil) then
+								TehrsCDs._externCDs_paladins[playerName]["LoH+"] = GetTime();
+							end 
+						end					
+						TehrsCDs._externCDs_paladins[playerName]["LoH"] = nil;
+						TehrsCDs._immunityCDs_paladins[playerName]["Bubble"] = nil;                        
+					else
+						if TehrsCDs["Show Settings"].Bubble then
+							if (TehrsCDs._immunityCDs_paladins[playerName]["Bubble"] == nil) then
+								TehrsCDs._immunityCDs_paladins[playerName]["Bubble"] = GetTime();
+							end  
+						end
+						if TehrsCDs["Show Settings"].LoH then
+							if (TehrsCDs._externCDs_paladins[playerName]["LoH"] == nil) then
+								TehrsCDs._externCDs_paladins[playerName]["LoH"] = GetTime();
+							end 
+						end			
+						TehrsCDs._externCDs_paladins[playerName]["LoH+"] = nil;					
+						TehrsCDs._immunityCDs_paladins[playerName]["Bubble+"] = nil;
+					end        
+					if TehrsCDs["Show Settings"].Rebuke then
+						if (TehrsCDs._interrupts_paladins[playerName]["Rebuke"] == nil) then
+							TehrsCDs._interrupts_paladins[playerName]["Rebuke"] = GetTime();
+						end                  
+					end
+					TehrsCDs._raidCDs_paladins[playerName]["Aura-M"] = nil;
+					TehrsCDs._raidCDs_paladins[playerName]["Wings"] = nil;
+					TehrsCDs._raidCDs_paladins[playerName]["Wings+"] = nil;
+					TehrsCDs._externCDs_paladins[playerName]["Sac"] = nil;            
+					TehrsCDs._raidCDs_paladins[playerName]["Aegis"] = nil;             
+				elseif (specName == 66) then
+					local _, _, _, protBubbleSpecced = GetTalentInfo(5, 1, activeSpec, not isPlayer, playerName);  
+					if (protBubbleSpecced)then   
+						if TehrsCDs["Show Settings"].Bubble then
+							if (TehrsCDs._immunityCDs_paladins[playerName]["Bubble+"] == nil) then
+								TehrsCDs._immunityCDs_paladins[playerName]["Bubble+"] = GetTime();
+							end  
+						end
+						if TehrsCDs["Show Settings"].LoH then
+							if (TehrsCDs._externCDs_paladins[playerName]["LoH+"] == nil) then
+								TehrsCDs._externCDs_paladins[playerName]["LoH+"] = GetTime();
+							end 
+						end					
+						TehrsCDs._externCDs_paladins[playerName]["LoH"] = nil;
+						TehrsCDs._immunityCDs_paladins[playerName]["Bubble"] = nil;                        
+					else
+						if TehrsCDs["Show Settings"].Bubble then
+							if (TehrsCDs._immunityCDs_paladins[playerName]["Bubble"] == nil) then
+								TehrsCDs._immunityCDs_paladins[playerName]["Bubble"] = GetTime();
+							end  
+						end
+						if TehrsCDs["Show Settings"].LoH then
+							if (TehrsCDs._externCDs_paladins[playerName]["LoH"] == nil) then
+								TehrsCDs._externCDs_paladins[playerName]["LoH"] = GetTime();
+							end 
+						end			
+						TehrsCDs._externCDs_paladins[playerName]["LoH+"] = nil;					
+						TehrsCDs._immunityCDs_paladins[playerName]["Bubble+"] = nil;
+					end  
+					if TehrsCDs["Show Settings"].Sac then
+						if (TehrsCDs._externCDs_paladins[playerName]["Sac"] == nil) then
+							TehrsCDs._externCDs_paladins[playerName]["Sac"] = GetTime();
+						end  
+					end
+					local _, _, _, aegisSpecced = GetTalentInfo(6, 3, activeSpec, not isPlayer, playerName);  
+					if (aegisSpecced)then   
+						if TehrsCDs["Show Settings"].Aegis then
+							if (TehrsCDs._raidCDs_paladins[playerName]["Aegis"] == nil) then
+								TehrsCDs._raidCDs_paladins[playerName]["Aegis"] = GetTime();
+							end    
+						end
+					else
+						TehrsCDs._raidCDs_paladins[playerName]["Aegis"] = nil;
+					end
+					if TehrsCDs["Show Settings"].Rebuke then
+						if (TehrsCDs._interrupts_paladins[playerName]["Rebuke"] == nil) then
+							TehrsCDs._interrupts_paladins[playerName]["Rebuke"] = GetTime();
+						end  
+					end				
+					TehrsCDs._raidCDs_paladins[playerName]["Aura-M"] = nil; 
+					TehrsCDs._raidCDs_paladins[playerName]["Wings"] = nil;   
+					TehrsCDs._raidCDs_paladins[playerName]["Wings+"] = nil;
+				end
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Paladin CDs") end
+			elseif (class == 7) then
+				if (TehrsCDs._raidCDs_shamans == nil) then TehrsCDs._raidCDs_shamans = {} end
+				if (TehrsCDs._raidCDs_shamans[playerName] == nil) then TehrsCDs._raidCDs_shamans[playerName] = {} end
+				if (TehrsCDs._interrupts_shamans == nil) then TehrsCDs._interrupts_shamans = {} end
+				if (TehrsCDs._interrupts_shamans[playerName] == nil) then TehrsCDs._interrupts_shamans[playerName] = {} end
+				if (TehrsCDs._utilityCDs_shamans == nil) then TehrsCDs._utilityCDs_shamans = {} end
+				if (TehrsCDs._utilityCDs_shamans[playerName] == nil) then TehrsCDs._utilityCDs_shamans[playerName] = {} end   
+				if (TehrsCDs._rezCDs_shamans == nil) then TehrsCDs._rezCDs_shamans = {} end
+				if (TehrsCDs._rezCDs_shamans[playerName] == nil) then TehrsCDs._rezCDs_shamans[playerName] = {} end    
+				if (TehrsCDs._aoeCCs_shamans == nil) then TehrsCDs._aoeCCs_shamans = {} end
+				if (TehrsCDs._aoeCCs_shamans[playerName] == nil) then TehrsCDs._aoeCCs_shamans[playerName] = {} end
+				
+				if TehrsCDs["Show Settings"].Ankh then
+					if (TehrsCDs._rezCDs_shamans[playerName]["Ankh"] == nil) then
+						TehrsCDs._rezCDs_shamans[playerName]["Ankh"] = GetTime();
+					end                    
+				end
+				if TehrsCDs["Show Settings"].WShear then
+					if (TehrsCDs._interrupts_shamans[playerName]["W-Shear"] == nil) then
+						TehrsCDs._interrupts_shamans[playerName]["W-Shear"] = GetTime();
+					end 
+				end
+				local _, _, _, windRushTotemSpecced = GetTalentInfo(5, 3, activeSpec, not isPlayer, playerName);            
+				if (windRushTotemSpecced) then
+					if TehrsCDs["Show Settings"].WindRush then
+						if (TehrsCDs._utilityCDs_shamans[playerName]["Wind Rush"] == nil) then
+							TehrsCDs._utilityCDs_shamans[playerName]["Wind Rush"] = GetTime();
+						end
+					end
+				else
+					TehrsCDs._utilityCDs_shamans[playerName]["Wind Rush"] = nil;
+				end              
+				local _, _, _, capSpecced = GetTalentInfo(3, 3, activeSpec, not isPlayer, playerName);  
+				if (capSpecced) then     
+					if TehrsCDs["Show Settings"].CapTotem then
+						if (TehrsCDs._aoeCCs_shamans[playerName]["Cap Totem+"] == nil) then
+							TehrsCDs._aoeCCs_shamans[playerName]["Cap Totem+"] = GetTime();
+						end    
+					end
+					TehrsCDs._aoeCCs_shamans[playerName]["Cap Totem"] = nil;                    
+				else
+					if TehrsCDs["Show Settings"].CapTotem then
+						if (TehrsCDs._aoeCCs_shamans[playerName]["Cap Totem"] == nil) then
+							TehrsCDs._aoeCCs_shamans[playerName]["Cap Totem"] = GetTime();
+						end    
+					end
+					TehrsCDs._aoeCCs_shamans[playerName]["Cap Totem+"] = nil;
+				end     
+				
+				if (specName == 264) then
+					local _, _, _, ancestralProtectionTotemSpecced = GetTalentInfo(5, 1, activeSpec, not isPlayer, playerName);            
+					if (ancestralProtectionTotemSpecced) then
+						if TehrsCDs["Show Settings"].AProt then
+							if (TehrsCDs._raidCDs_shamans[playerName]["A-Prot"] == nil) then
+								TehrsCDs._raidCDs_shamans[playerName]["A-Prot"] = GetTime();
+							end  
+						end
+					else
+						TehrsCDs._raidCDs_shamans[playerName]["A-Prot"] = nil;
+					end 
+					local _, _, _, ascendanceSpecced = GetTalentInfo(7, 3, activeSpec, not isPlayer, playerName);            
+					if (ascendanceSpecced) then
+						if TehrsCDs["Show Settings"].Ascendance then
+							if (TehrsCDs._raidCDs_shamans[playerName]["Ascendance"] == nil) then
+								TehrsCDs._raidCDs_shamans[playerName]["Ascendance"] = GetTime();
+							end    
+						end
+					else
+						TehrsCDs._raidCDs_shamans[playerName]["Ascendance"] = nil;
+					end 
+					if TehrsCDs["Show Settings"].HTide then
+						if (TehrsCDs._raidCDs_shamans[playerName]["H-Tide"] == nil) then
+							TehrsCDs._raidCDs_shamans[playerName]["H-Tide"] = GetTime();
+						end   
+					end
+					if TehrsCDs["Show Settings"].SLT then
+						if (TehrsCDs._raidCDs_shamans[playerName]["SLT"] == nil) then
+							TehrsCDs._raidCDs_shamans[playerName]["SLT"] = GetTime();
+						end 
+					end
+					TehrsCDs._aoeCCs_shamans[playerName]["Thunderstorm"] = nil;
+					TehrsCDs._raidCDs_shamans[playerName]["AG"] = nil;
+				elseif (specName == 262) then
+					local _, _, _, agEleSpecced = GetTalentInfo(2, 2, activeSpec, not isPlayer, playerName);            
+					if (agEleSpecced) then
+						if TehrsCDs["Show Settings"].AG then 
+							if (TehrsCDs._raidCDs_shamans[playerName]["AG"] == nil) then
+								TehrsCDs._raidCDs_shamans[playerName]["AG"] = GetTime();
+							end    
+						end
+					else
+						TehrsCDs._raidCDs_shamans[playerName]["AG"] = nil;
+					end 
+					if TehrsCDs["Show Settings"].Thunderstorm then
+						if (TehrsCDs._aoeCCs_shamans[playerName]["Thunderstorm"] == nil) then
+							TehrsCDs._aoeCCs_shamans[playerName]["Thunderstorm"] = GetTime();
+						end   
+					end				
+					TehrsCDs._raidCDs_shamans[playerName]["H-Tide"] = nil;
+					TehrsCDs._raidCDs_shamans[playerName]["SLT"] = nil;  
+					TehrsCDs._raidCDs_shamans[playerName]["A-Prot"] = nil;  
+					TehrsCDs._raidCDs_shamans[playerName]["Ascendance"] = nil;
+				elseif (specName == 263) then
+					TehrsCDs._raidCDs_shamans[playerName]["H-Tide"] = nil;
+					TehrsCDs._raidCDs_shamans[playerName]["SLT"] = nil;  
+					TehrsCDs._raidCDs_shamans[playerName]["AG"] = nil;
+					TehrsCDs._raidCDs_shamans[playerName]["A-Prot"] = nil;
+					TehrsCDs._aoeCCs_shamans[playerName]["Thunderstorm"] = nil;
+					TehrsCDs._raidCDs_shamans[playerName]["Ascendance"] = nil;
+				end
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Shaman CDs") end
+			elseif (class == 3) then
+				if (TehrsCDs._interrupts_hunters == nil) then TehrsCDs._interrupts_hunters = {} end
+				if (TehrsCDs._interrupts_hunters[playerName] == nil) then TehrsCDs._interrupts_hunters[playerName] = {} end 
+				if (TehrsCDs._aoeCCs_hunters == nil) then TehrsCDs._aoeCCs_hunters = {} end
+				if (TehrsCDs._aoeCCs_hunters[playerName] == nil) then TehrsCDs._aoeCCs_hunters[playerName] = {} end
+				if (TehrsCDs._immunityCDs_hunters == nil) then TehrsCDs._immunityCDs_hunters = {} end
+				if (TehrsCDs._immunityCDs_hunters[playerName] == nil) then TehrsCDs._immunityCDs_hunters[playerName] = {} end 
+				if (TehrsCDs._utilityCDs_hunters == nil) then TehrsCDs._utilityCDs_hunters = {} end
+				if (TehrsCDs._utilityCDs_hunters[playerName] == nil) then TehrsCDs._utilityCDs_hunters[playerName] = {} end             
+				
+				local _, _, _, bindingSpecced = GetTalentInfo(5, 3, activeSpec, not isPlayer, playerName);            
+				if (bindingSpecced) then
+					if TehrsCDs["Show Settings"].Binding then
+						if (TehrsCDs._aoeCCs_hunters[playerName]["Binding"] == nil) then
+							TehrsCDs._aoeCCs_hunters[playerName]["Binding"] = GetTime();
+						end
+					end
+				else
+					TehrsCDs._aoeCCs_hunters[playerName]["Binding"] = nil;
+				end   			
+				local _, _, _, aspectSpecced = GetTalentInfo(5, 1, activeSpec, not isPlayer, playerName);  
+				if (aspectSpecced)then     
+					if TehrsCDs["Show Settings"].Turtle then
+						if (TehrsCDs._immunityCDs_hunters[playerName]["Turtle+"] == nil) then
+							TehrsCDs._immunityCDs_hunters[playerName]["Turtle+"] = GetTime();
+						end  
+					end
+					TehrsCDs._immunityCDs_hunters[playerName]["Turtle"] = nil;                        
+				else
+					if TehrsCDs["Show Settings"].Turtle then
+						if (TehrsCDs._immunityCDs_hunters[playerName]["Turtle"] == nil) then
+							TehrsCDs._immunityCDs_hunters[playerName]["Turtle"] = GetTime();
+						end  
+					end				
+					TehrsCDs._immunityCDs_hunters[playerName]["Turtle+"] = nil;
+				end  			
+				if TehrsCDs["Show Settings"].Misdirect then
+					if (TehrsCDs._utilityCDs_hunters[playerName]["Misdirect"] == nil) then
+						TehrsCDs._utilityCDs_hunters[playerName]["Misdirect"] = GetTime();
+					end          
+				end     			
+				
+				if (specName == 255) then           
+					if TehrsCDs["Show Settings"].Muzzle then
+						if (TehrsCDs._interrupts_hunters[playerName]["Muzzle"] == nil) then
+							TehrsCDs._interrupts_hunters[playerName]["Muzzle"] = GetTime();
+						end
+					end
+					TehrsCDs._interrupts_hunters[playerName]["C-Shot"] = nil;            
+				else                         
+					if TehrsCDs["Show Settings"].CShot then 
+						if (TehrsCDs._interrupts_hunters[playerName]["C-Shot"] == nil) then
+							TehrsCDs._interrupts_hunters[playerName]["C-Shot"] = GetTime();
+						end   
+					end                           
+					TehrsCDs._interrupts_hunters[playerName]["Muzzle"] = nil;                 
+				end
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Hunter CDs") end
+			elseif (class == 4) then
+				if (TehrsCDs._interrupts_rogues == nil) then TehrsCDs._interrupts_rogues = {} end
+				if (TehrsCDs._interrupts_rogues[playerName] == nil) then TehrsCDs._interrupts_rogues[playerName] = {} end
+				if (TehrsCDs._immunityCDs_rogues == nil) then TehrsCDs._immunityCDs_rogues = {} end
+				if (TehrsCDs._immunityCDs_rogues[playerName] == nil) then TehrsCDs._immunityCDs_rogues[playerName] = {} end     
+				if (TehrsCDs._utilityCDs_rogues == nil) then TehrsCDs._utilityCDs_rogues = {} end
+				if (TehrsCDs._utilityCDs_rogues[playerName] == nil) then TehrsCDs._utilityCDs_rogues[playerName] = {} end             
+				
+				if TehrsCDs["Show Settings"].Kick then
+					if (TehrsCDs._interrupts_rogues[playerName]["Kick"] == nil) then
+						TehrsCDs._interrupts_rogues[playerName]["Kick"] = GetTime();
+					end
+				end
+				if TehrsCDs["Show Settings"].Tricks then
+					if (TehrsCDs._utilityCDs_rogues[playerName]["Tricks"] == nil) then
+						TehrsCDs._utilityCDs_rogues[playerName]["Tricks"] = GetTime();
+					end                      
+				end
+				if TehrsCDs["Show Settings"].Shroud then
+					if (TehrsCDs._utilityCDs_rogues[playerName]["Shroud"] == nil) then
+						TehrsCDs._utilityCDs_rogues[playerName]["Shroud"] = GetTime();
+					end                      
+				end	
+				if TehrsCDs["Show Settings"].Cloak then
+					if (TehrsCDs._immunityCDs_rogues[playerName]["Cloak"] == nil) then
+						TehrsCDs._immunityCDs_rogues[playerName]["Cloak"] = GetTime();
+					end                    
+				end               
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Rogue CDs") end
+			elseif (class == 8) then
+				if (TehrsCDs._interrupts_mages == nil) then TehrsCDs._interrupts_mages = {} end
+				if (TehrsCDs._interrupts_mages[playerName] == nil) then TehrsCDs._interrupts_mages[playerName] = {} end      
+				if (TehrsCDs._immunityCDs_mages == nil) then TehrsCDs._immunityCDs_mages = {} end
+				if (TehrsCDs._immunityCDs_mages[playerName] == nil) then TehrsCDs._immunityCDs_mages[playerName] = {} end             
+				
+				if TehrsCDs["Show Settings"].CSpell then
+					if (TehrsCDs._interrupts_mages[playerName]["C-Spell"] == nil) then
+						TehrsCDs._interrupts_mages[playerName]["C-Spell"] = GetTime();
+					end            
+				end
+				
+				if (specName == 64) then
+					if TehrsCDs["Show Settings"].Block then
+						if (TehrsCDs._immunityCDs_mages[playerName]["Block+"] == nil) then
+							TehrsCDs._immunityCDs_mages[playerName]["Block+"] = GetTime();
+						end                    
+					end
+					TehrsCDs._immunityCDs_mages[playerName]["Block"] = nil;                             
+				else    
+					if TehrsCDs["Show Settings"].Block then
+						if (TehrsCDs._immunityCDs_mages[playerName]["Block"] == nil) then
+							TehrsCDs._immunityCDs_mages[playerName]["Block"] = GetTime();
+						end                    
+					end
+					TehrsCDs._immunityCDs_mages[playerName]["Block+"] = nil; 
+				end
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Mage CDs") end
+			elseif (class == 9) then
+				if (TehrsCDs._rezCDs_warlocks == nil) then TehrsCDs._rezCDs_warlocks = {} end
+				if (TehrsCDs._rezCDs_warlocks[playerName] == nil) then TehrsCDs._rezCDs_warlocks[playerName] = {} end              
+				if (TehrsCDs._aoeCCs_warlocks == nil) then TehrsCDs._aoeCCs_warlocks = {} end
+				if (TehrsCDs._aoeCCs_warlocks[playerName] == nil) then TehrsCDs._aoeCCs_warlocks[playerName] = {} end
+				if (TehrsCDs._interrupts_warlocks == nil) then TehrsCDs._interrupts_warlocks = {} end
+				if (TehrsCDs._interrupts_warlocks[playerName] == nil) then TehrsCDs._interrupts_warlocks[playerName] = {} end			
+				
+				if TehrsCDs["Show Settings"].Soulstone then
+					if (TehrsCDs._rezCDs_warlocks[playerName]["Soulstone"] == nil) then
+						TehrsCDs._rezCDs_warlocks[playerName]["Soulstone"] = GetTime();
+					end            
+				end
+				
+				local _, _, _, shadowfurySpecced = GetTalentInfo(5, 1, activeSpec, not isPlayer, playerName);  
+				if (shadowfurySpecced) then     
+					if TehrsCDs["Show Settings"].Shadowfury then
+						if (TehrsCDs._aoeCCs_warlocks[playerName]["Shadowfury+"] == nil) then
+							TehrsCDs._aoeCCs_warlocks[playerName]["Shadowfury+"] = GetTime();
+						end    
+					end
+					TehrsCDs._aoeCCs_warlocks[playerName]["Shadowfury"] = nil;                    
+				else
+					if TehrsCDs["Show Settings"].Shadowfury then
+						if (TehrsCDs._aoeCCs_warlocks[playerName]["Shadowfury"] == nil) then
+							TehrsCDs._aoeCCs_warlocks[playerName]["Shadowfury"] = GetTime();
+						end    
+					end
+					TehrsCDs._aoeCCs_warlocks[playerName]["Shadowfury+"] = nil;
+				end   			
+				
+				if (specName == 267) then
+					if TehrsCDs["Show Settings"].Infernal then
+						if (TehrsCDs._aoeCCs_warlocks[playerName]["Infernal"] == nil) then
+							TehrsCDs._aoeCCs_warlocks[playerName]["Infernal"] = GetTime();
+						end    
+					end           
+				else 
+					TehrsCDs._aoeCCs_warlocks[playerName]["Infernal"] = nil;
+				end
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Warlock CDs") end
+			elseif (class == 10) then
+				if (TehrsCDs._raidCDs_monks == nil) then TehrsCDs._raidCDs_monks = {} end
+				if (TehrsCDs._raidCDs_monks[playerName] == nil) then TehrsCDs._raidCDs_monks[playerName] = {} end
+				if (TehrsCDs._externCDs_monks == nil) then TehrsCDs._externCDs_monks = {} end
+				if (TehrsCDs._externCDs_monks[playerName] == nil) then TehrsCDs._externCDs_monks[playerName] = {} end
+				if (TehrsCDs._interrupts_monks == nil) then TehrsCDs._interrupts_monks = {} end
+				if (TehrsCDs._interrupts_monks[playerName] == nil) then TehrsCDs._interrupts_monks[playerName] = {} end
+				if (TehrsCDs._aoeCCs_monks == nil) then TehrsCDs._aoeCCs_monks = {} end
+				if (TehrsCDs._aoeCCs_monks[playerName] == nil) then TehrsCDs._aoeCCs_monks[playerName] = {} end		
+				
+				local _, _, _, sweepSpecced = GetTalentInfo(4, 1, activeSpec, not isPlayer, playerName);  
+				if (sweepSpecced) then     
+					if TehrsCDs["Show Settings"].Sweep then
+						if (TehrsCDs._aoeCCs_monks[playerName]["Sweep+"] == nil) then
+							TehrsCDs._aoeCCs_monks[playerName]["Sweep+"] = GetTime();
+						end    
+					end
+					TehrsCDs._aoeCCs_monks[playerName]["Sweep"] = nil;                    
+				else
+					if TehrsCDs["Show Settings"].Sweep then
+						if (TehrsCDs._aoeCCs_monks[playerName]["Sweep"] == nil) then
+							TehrsCDs._aoeCCs_monks[playerName]["Sweep"] = GetTime();
+						end    
+					end
+					TehrsCDs._aoeCCs_monks[playerName]["Sweep+"] = nil;
+				end   
+				local _, _, _, ringSpecced = GetTalentInfo(4, 3, activeSpec, not isPlayer, playerName);            
+				if (ringSpecced) then
+					if TehrsCDs["Show Settings"].Ring then
+						if (TehrsCDs._aoeCCs_monks[playerName]["Ring"] == nil) then
+							TehrsCDs._aoeCCs_monks[playerName]["Ring"] = GetTime();
+						end
+					end
+				else
+					TehrsCDs._aoeCCs_monks[playerName]["Ring"] = nil;
+				end			
+				
+				if (specName == 270) then
+					if TehrsCDs["Show Settings"].Revival then
+						if (TehrsCDs._raidCDs_monks[playerName]["Revival"] == nil) then
+							TehrsCDs._raidCDs_monks[playerName]["Revival"] = GetTime();
+						end 
+					end
+					if TehrsCDs["Show Settings"].LCocoon then
+						if (TehrsCDs._externCDs_monks[playerName]["L-Cocoon"] == nil) then
+							TehrsCDs._externCDs_monks[playerName]["L-Cocoon"] = GetTime();
+						end  
+					end
+					TehrsCDs._interrupts_monks[playerName]["S-Strike"] = nil;                 
+				else
+					if TehrsCDs["Show Settings"].SStrike then
+						if (TehrsCDs._interrupts_monks[playerName]["S-Strike"] == nil) then
+							TehrsCDs._interrupts_monks[playerName]["S-Strike"] = GetTime();
+						end            
+					end
+					TehrsCDs._raidCDs_monks[playerName]["Revival"] = nil;
+					TehrsCDs._externCDs_monks[playerName]["L-Cocoon"] = nil;
+				end
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Monk CDs") end
+			end  
+			
+			if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Baseline Abilities completed, moving to Custom Abilities") end	
+			
+			if TehrsCDs["Custom Abilities"].CustomAbilities then
+				TehrsCDs["Custom Abilities"].AddCDs(playerName, class, race, specName, activeSpec, isPlayer)
+			end
+			
+			if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Classes completed, moving to Pets") end	   		
+			
+			local currentPlayer;
+			local currentPlayerRealm;
+			local currentPet;
+			local smartGroupMembers;
+			local currentPlayerClass;
+
+			if IsInRaid() then
+				smartGroupMembers = GetNumGroupMembers()
+			else
+				smartGroupMembers = GetNumSubgroupMembers()
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: checking Player Pet") end
+				
+				currentPlayer = GetUnitName("player",true)
+				currentPet = "pet"
+				_, _, currentPlayerClass = UnitClass("player")		
+				
+				aura_env.CheckPetAbilities(currentPlayer,currentPet,currentPlayerClass,activeSpec,isPlayer)
+				
+			end
+
+			if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: checking Group Pets") end
+			
+			for i = 1,smartGroupMembers do
+				if IsInRaid() then
+					currentPlayer = GetUnitName("raid"..i,true)
+					currentPet = "raid"..i.."pet"
+					_, _, currentPlayerClass = UnitClass("raid"..i)
+				else
+					currentPlayer = GetUnitName("party"..i,true)
+					currentPet = "party"..i.."pet"	
+					_, _, currentPlayerClass = UnitClass("party"..i)
+				end
+
+				aura_env.CheckPetAbilities(currentPlayer,currentPet,currentPlayerClass,activeSpec,isPlayer)
+				
+			end	
+			
+			-- Added everything, moving to next player        
+			if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: added all CDs, moving to next") end
+			
+			TehrsCDs._raidCDs_groupPoll_state = "nextPlayer";
+		end
+		
+		if (TehrsCDs._raidCDs_groupPoll_state == "nextPlayer") then
+			
+			if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: state is nextPlayer") end
+			
+			TehrsCDs._raidCDs_groupPoll_playerCounter = TehrsCDs._raidCDs_groupPoll_playerCounter + 1;
+			
+			if (TehrsCDs._raidCDs_groupPoll_playerCounter > playerCount) then
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: counter is above total count") end
+				
+				local allCDs = {};            
+				
+				allCDs["1"] = TehrsCDs._externCDs_druids; 
+				allCDs["2"] = TehrsCDs._externCDs_monks;
+				allCDs["3"] = TehrsCDs._externCDs_paladins;
+				allCDs["4"] = TehrsCDs._externCDs_priests; 
+				allCDs["5"] = TehrsCDs._externCDs_warriors;
+				allCDs["6"] = TehrsCDs._externCDs_dhs;
+				allCDs["7"] = TehrsCDs._raidCDs_druids;
+				allCDs["8"] = TehrsCDs._raidCDs_monks;
+				allCDs["9"] = TehrsCDs._raidCDs_paladins;
+				allCDs["10"] = TehrsCDs._raidCDs_priests;
+				allCDs["11"] = TehrsCDs._raidCDs_shamans;
+				allCDs["12"] = TehrsCDs._raidCDs_warriors;
+				allCDs["13"] = TehrsCDs._raidCDs_dhs;
+				allCDs["14"] = TehrsCDs._utilityCDs_dks;    
+				allCDs["15"] = TehrsCDs._aoeCCs_dhs;                
+				allCDs["16"] = TehrsCDs._utilityCDs_shamans;
+				allCDs["17"] = TehrsCDs._utilityCDs_druids;
+				allCDs["18"] = TehrsCDs._utilityCDs_priests;
+				allCDs["19"] = TehrsCDs._utilityCDs_paladins;
+				allCDs["20"] = TehrsCDs._interrupts_priests;
+				allCDs["21"] = TehrsCDs._interrupts_mages;
+				allCDs["22"] = TehrsCDs._interrupts_hunters;    
+				allCDs["23"] = TehrsCDs._interrupts_shamans;
+				allCDs["24"] = TehrsCDs._interrupts_monks;
+				allCDs["25"] = TehrsCDs._interrupts_paladins;
+				allCDs["26"] = TehrsCDs._interrupts_dks;  
+				allCDs["27"] = TehrsCDs._interrupts_dhs;              
+				allCDs["28"] = TehrsCDs._interrupts_rogues;    
+				allCDs["29"] = TehrsCDs._interrupts_warriors;
+				allCDs["30"] = TehrsCDs._interrupts_druids;   
+				allCDs["31"] = TehrsCDs._interrupts_warlocks;             
+				allCDs["32"] = TehrsCDs._rezCDs_dks;      
+				allCDs["33"] = TehrsCDs._rezCDs_druids; 
+				allCDs["34"] = TehrsCDs._utilityCDs_nightelf;
+				allCDs["35"] = TehrsCDs._rezCDs_warlocks;
+				allCDs["36"] = TehrsCDs._rezCDs_shamans;   
+				allCDs["37"] = TehrsCDs._aoeCCs_druids;
+				allCDs["38"] = TehrsCDs._aoeCCs_priests;        
+				allCDs["39"] = TehrsCDs._aoeCCs_hunters;
+				allCDs["40"] = TehrsCDs._aoeCCs_mages;
+				allCDs["41"] = TehrsCDs._aoeCCs_monks;      
+				allCDs["42"] = TehrsCDs._aoeCCs_shamans;       
+				allCDs["43"] = TehrsCDs._aoeCCs_warriors;
+				allCDs["44"] = TehrsCDs._aoeCCs_warlocks; 
+				allCDs["45"] = TehrsCDs._aoeCCs_dks; 
+				allCDs["46"] = TehrsCDs._interrupts_belfs;  
+				allCDs["47"] = TehrsCDs._aoeCCs_tauren;           
+				allCDs["48"] = TehrsCDs._immunityCDs_hunters;
+				allCDs["49"] = TehrsCDs._immunityCDs_rogues;
+				allCDs["50"] = TehrsCDs._immunityCDs_paladins; 
+				allCDs["51"] = TehrsCDs._immunityCDs_mages; 
+				allCDs["52"] = TehrsCDs._immunityCDs_dhs; 
+				allCDs["53"] = TehrsCDs._utilityCDs_hunters;
+				allCDs["54"] = TehrsCDs._utilityCDs_rogues;
+				allCDs["55"] = TehrsCDs._aoeCCs_hmtauren;
+				
+				if (not UnitInParty("player")) then
+					if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: not in party, moving to inspectPlayer") end
+					TehrsCDs._raidCDs_groupPoll_state = "inspectPlayer"
+				end
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: nilling") end
+				
+				for theCDGroupColor, theCDGroup in pairs(allCDs) do                
+					if (theCDGroup ~= nil) then        
+						for name, cdData in pairs(theCDGroup) do
+							
+							if name ~= UnitName("player") then
+								
+								if (not UnitInParty(name)) then
+									theCDGroup[name] = nil;
+								end
+								
+								local raidIndex = UnitInRaid(name);                                               
+								if (raidIndex ~= nil and raidIndex > playerCount) then
+									theCDGroup[name] = nil;
+								end
+								
+							end
+							
+						end
+					end
+				end
+				
+				TehrsCDs._raidCDs_groupPoll_playerCounter = 0;
+				return "";
+			end    
+			
+			local playerName = GetRaidRosterInfo(TehrsCDs._raidCDs_groupPoll_playerCounter)
+			
+			if playerName == nil then
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("playerName is nil") end
+				playerName = UnitName("player")
+				TehrsCDs._raidCDs_groupPoll_playerCounter = TehrsCDs._raidCDs_groupPoll_playerCounter - 1
+			end
+			
+			local canInspect = CanInspect(playerName, false);
+			
+			if (not canInspect) then
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: can't inspect") end
+				return "";
+			end
+			
+			if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: moving to inspectPlayer") end
+			
+			NotifyInspect(playerName);
+			TehrsCDs._raidCDs_groupPoll_currentPlayer = playerName;
+			TehrsCDs._raidCDs_groupPoll_state = "inspectPlayer";
+			
+			return "";
+		end
+		
+		TehrsCDs._raidCDs_groupPoll_state = nil;    
+		return "";     
+	end
+	
+	if not TehrsCDs.minmaxDisplay and aura_env.pollWhileHidden then
+		if region.namesText then region.namesText:SetText("") end
+		if region.timeText then region.timeText:SetText("") end
+		if region.CDText then region.CDText:SetText("") end
+		return ""
+	end
+	
+    if (GetTime() - TehrsCDs._raidCDs_textPoll > 0.5) then
+        
+		TehrsCDs._raidCDs_textPoll = GetTime();
+    
+		_, TehrsCDs.instanceType = IsInInstance();
+		_, TehrsCDs.instanceGroupType, TehrsCDs.instanceDifficulty = GetInstanceInfo();
+		
+		TehrsCDs._raidCDs_namesText = "                                                          ";
+		TehrsCDs._raidCDs_cdText = "                                                             ";
+		TehrsCDs._raidCDs_timeText = "                                                             ";
+		
+		if locale == "ruRU" then aura_env.nameMaxLength = 16
+		elseif locale == "zhCN" then aura_env.nameMaxLength = 18
+		elseif locale == "zhTW" then aura_env.nameMaxLength = 18    end  
+		
+		if TehrsCDs["Translation Settings"]["frFR"].Translation_French then
+			titles = TehrsCDs["Translation Settings"]["frFR"].Translation_French_titles
+			abilityNames = TehrsCDs["Translation Settings"]["frFR"].Translation_French_abilityNames
+		elseif TehrsCDs["Translation Settings"]["zhCN"].Translation_Chinese then
+			titles = TehrsCDs["Translation Settings"]["zhCN"].Translation_Chinese_titles
+			abilityNames = TehrsCDs["Translation Settings"]["zhCN"].Translation_Chinese_abilityNames
+		elseif TehrsCDs["Translation Settings"]["zhTW"].Translation_ChineseTraditional then
+			titles = TehrsCDs["Translation Settings"]["zhTW"].Translation_ChineseTraditional_titles
+			abilityNames = TehrsCDs["Translation Settings"]["zhTW"].Translation_ChineseTraditional_abilityNames        
+		elseif TehrsCDs["Translation Settings"]["deDE"].Translation_German then
+			titles = TehrsCDs["Translation Settings"]["deDE"].Translation_German_titles 
+			abilityNames = TehrsCDs["Translation Settings"]["deDE"].Translation_German_abilityNames
+		elseif TehrsCDs["Translation Settings"]["koKR"].Translation_Korean then
+			titles = TehrsCDs["Translation Settings"]["koKR"].Translation_Korean_titles
+			abilityNames = TehrsCDs["Translation Settings"]["koKR"].Translation_Korean_abilityNames
+		elseif TehrsCDs["Translation Settings"]["ruRU"].Translation_Russian then
+			titles = TehrsCDs["Translation Settings"]["ruRU"].Translation_Russian_titles
+			abilityNames = TehrsCDs["Translation Settings"]["ruRU"].Translation_Russian_abilityNames		
+		elseif TehrsCDs["Translation Settings"]["esES"].Translation_Spanish then
+			titles = TehrsCDs["Translation Settings"]["esES"].Translation_Spanish_titles
+			abilityNames = TehrsCDs["Translation Settings"]["esES"].Translation_Spanish_abilityNames	
+		elseif TehrsCDs["Translation Settings"]["esES"].Translation_Spanish then
+			titles = TehrsCDs["Translation Settings"]["esES"].Translation_Spanish_titles
+			abilityNames = TehrsCDs["Translation Settings"]["esES"].Translation_Spanish_abilityNames		
+		elseif TehrsCDs["Translation Settings"]["itIT"].Translation_Italian then
+			titles = TehrsCDs["Translation Settings"]["itIT"].Translation_Italian_titles
+			abilityNames = TehrsCDs["Translation Settings"]["itIT"].Translation_Italian_abilityNames			
+		else
+			titles[1],titles[2],titles[3],titles[4],titles[5],titles[6],titles[7],titles[8] =
+			"Externals","Raid CDs","Utility CDs","Immunities","Crowd Control","Interrupts","Battle Rezzes","Battle Rez Counter"    
+		end 
+		
+		if WeakAuras.IsOptionsOpen() then
+			if (GetNumGroupMembers() > 0) or TehrsCDs["Show Settings"].WhenSolo then
+				TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText.."\nRELOAD YOUR UI AFTER CHANGING ANY SETTINGS\n|cFF00A2E8Made by Tehrdk of Illidan (US)                        |r"
+				TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText.."\n\n"
+				TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText.."\n\n"
+			else
+				if aura_env.AprilFools and date("%m") == "04" and (date("%d") == "01" or date("%d") == "02") then
+					TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText.."\n\n|cFF00A2E8Kellogg's Eggo Waffles                        |r\n"..aura_env.raidCDsIndentAmount.."|cFFF04A23Homestyle|r\n"..aura_env.raidCDsIndentAmount.."|cFF00B5BFButtermilk|r\n"..aura_env.raidCDsIndentAmount.."|cFF5F271EChocolate|r\n".."\n|cFF00A2E8Thick & Fluffy                        |r\n\n"..aura_env.raidCDsIndentAmount.."|cFF0087ACOriginal|r\n"..aura_env.raidCDsIndentAmount.."|cFF9F543ACinnamon|r\n"..aura_env.raidCDsIndentAmount.."|cFF4E3B7FCobbler|r\n"..aura_env.raidCDsIndentAmount.."|cFFC92031Shortcake|r\n".."\n|cFF00A2E8Fruity                        |r\n\n"..aura_env.raidCDsIndentAmount.."|cFF2E3891Blueberry|r\n"..aura_env.raidCDsIndentAmount.."|cFFC62550Strawberry|r\n"
+					TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText.."\n\n\n|cFFF04A23Crispy|r\n|cFF00B5BFDelicious|r\n|cFF5F271EYummy|r\n\n\n\n|cFF0087ACDelightful|r\n|cFF9F543ASweet|r\n|cFF4E3B7FTasty|r\n|cFFC92031Exquisite|r\n\n\n\n|cFF2E3891Berry Good|r\n|cFFC62550Mmmmm...|r\n";
+					TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText.."\n\n\n|cFFFF000001:59|r\n|cFF00FF00READY|r\n|cFFFF660000:59|r\n\n\n\n|cFFFFCC0000:09|r\n|cFF00FF00READY|r\n|cFFFF000001:59|r\n|cFF333333READY|r\n\n\n\n|cFFFF660000:59|r\n|cFF333333READY|r\n"; 
+				else
+					TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText.."\n|cFF00A2E8Made by Tehr                        |r\n\n"..aura_env.raidCDsIndentAmount.."|cFFC41F3BTehr (US)|r\n".."\n|cFF00A2E8Battle.net                        |r\n\n"..aura_env.raidCDsIndentAmount.."|cFFFF7D0ATehr|r\n".."\n|cFF00A2E8Discord                        |r\n\n"..aura_env.raidCDsIndentAmount.."|cFFC79C6ETehr|r\n".."\n|cFF00A2E8Stream                        |r\n\n"..aura_env.raidCDsIndentAmount.."|cFFF58CBAtwitch.tv/tehrible|r\n".."\n|cFF00A2E8Patreon                        |r\n\n"..aura_env.raidCDsIndentAmount.."|cFFA330C9patreon.com/RaidCDs|r\n".."\n|cFF00A2E8PayPal                        |r\n\n"..aura_env.raidCDsIndentAmount.."|cFFFFFFFFtehrible@gmail.com|r\n".."\n|cFF00A2E8Latest updates available from:                        |r\n\n"..aura_env.raidCDsIndentAmount.."|cFF00FF96wago.io/RaidCDs|r\n" 
+					TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText.."\n\n\n|cFFC41F3BSargeras|r\n\n\n\n|cFFFF7D0A#1477|r\n\n\n\n|cFFC79C6E#5246|r\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+					TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText.."\n\n\n|cFF00FF00READY|r\n\n\n\n|cFFFFCC0000:09|r\n\n\n\n|cFFFF660000:59|r\n\n\n\n|cFFFF000001:59|r\n\n\n\n|cFFFF000029:59|r\n\n\n\n|cFFFF660059|r\n\n\n\n|cFF333333READY|r\n"; 
+				end
+			end
+		end
+		
+		if (GetNumGroupMembers() > 0) or TehrsCDs["Show Settings"].WhenSolo then
+			
+			if (TehrsCDs["Show Settings"].allExterns and TehrsCDs.instanceType ~= "raid" and GetNumGroupMembers()<20) or (TehrsCDs["Show Settings"].allExterns_inRaid and (TehrsCDs.instanceType == "raid" or GetNumGroupMembers()>19)) then         
+
+				local cdCount = 0;
+				local cdTexts = { }; 
+				local allExterns = { };
+				
+				allExterns["|cFFFF7D0A"] = TehrsCDs._externCDs_druids;
+				allExterns["|cFF00FF96"] = TehrsCDs._externCDs_monks;
+				allExterns["|cFFF58CBA"] = TehrsCDs._externCDs_paladins;
+				allExterns["|cFFFFFFFF"] = TehrsCDs._externCDs_priests;    
+				allExterns["|cFFC79C6E"] = TehrsCDs._externCDs_warriors;
+				allExterns["|cFFA330C9"] = TehrsCDs._externCDs_dhs;   
+				
+				for theCDGroupColor, theCDGroup in pairs(allExterns) do
+					if (theCDGroup ~= nil) then        
+						for name, cdData in pairs(theCDGroup) do             
+							for cdName, cdTime in aura_env.sortedPairs(cdData) do 
+								
+								if not ((not TehrsCDs["Show Settings"].Safeguard and cdName == "Safeguard")
+									or (not TehrsCDs["Show Settings"].GSpirit and cdName == "G-Spirit")
+									or (not TehrsCDs["Show Settings"].GSpirit and cdName == "G-Spirit+")
+									or (not TehrsCDs["Show Settings"].PSup and cdName == "P-Sup")                                
+									or (not TehrsCDs["Show Settings"].PSup and cdName == "P-Sup+")
+									or (not TehrsCDs["Show Settings"].IBark and cdName == "I-Bark")
+									or (not TehrsCDs["Show Settings"].IBark and cdName == "I-Bark+")
+									or (not TehrsCDs["Show Settings"].Spellward and cdName == "Spellward")
+									or (not TehrsCDs["Show Settings"].Sac and cdName == "Sac")
+									or (not TehrsCDs["Show Settings"].BoP and cdName == "BoP")
+									or (not TehrsCDs["Show Settings"].LoH and cdName == "LoH")
+									or (not TehrsCDs["Show Settings"].LoH and cdName == "LoH+")
+									or (not TehrsCDs["Show Settings"].LCocoon and cdName == "L-Cocoon")) then
+									
+									local timeColor;
+									local nameColor;
+									local cdDTime = cdTime - GetTime();  
+									local unitName = UnitName(name)                            
+									local unitRealm = GetRealmName(name)
+									
+									if aura_env.recolor then
+										if (UnitHealth(name) <= 0 or UnitIsGhost(name)) then
+											nameColor = aura_env.deadColor
+											timeColor = aura_env.deadColor
+										elseif not IsItemInRange(34471,name) and -- 40 Yards
+											(cdName == "G-Spirit" or cdName == "G-Spirit+" or cdName == "LoH" or cdName == "LoH+" or cdName == "BoP" or cdName == "L-Cocoon" or cdName == "P-Sup" or cdName == "P-Sup+" or cdName == "I-Bark" or cdName == "I-Bark+" or cdName == "Spellward" or cdName == "Sac") then
+											nameColor = aura_env.outOfRangeColor
+											timeColor = aura_env.outOfRangeColor		
+										elseif not IsItemInRange(31463,name) and -- 25 Yards
+											(cdName == "Safeguard") then
+											nameColor = aura_env.outOfRangeColor
+											timeColor = aura_env.outOfRangeColor										
+										else    
+											nameColor = theCDGroupColor
+											timeColor = aura_env.colorByTime(cdDTime)
+										end      
+									else    
+										nameColor = theCDGroupColor
+										timeColor = aura_env.colorByTime(cdDTime)                   
+									end    
+									
+									if (cdDTime <= 0) then
+										cdDTime = timeColor.."READY|r";
+									else
+										cdDTime = timeColor..string.format("%01d:%02d", math.floor(cdDTime/60), math.floor(cdDTime - 60*math.floor(cdDTime/60))).."|r"
+									end            
+									
+									dashpos = string.find(name,"-");
+									if (dashpos ~= nil) then name = string.sub(name, 0, dashpos - 1) end
+									
+									newName = string.sub(name, 0, aura_env.nameMaxLength);
+									
+									if (string.len(newName) <  string.len(name)) then newName = newName..".." end
+									
+									for k,v in pairs(aura_env.Supporters) do
+										if (k == name) and (v == unitRealm) then
+											newName = "*"..newName
+										end
+									end
+									
+									if abilityNames ~= nil then
+										for k,v in pairs(abilityNames) do
+											if k == cdName then
+												cdName = v
+											end    
+										end    
+									end
+									
+									if newName ~= nil then
+										if not TehrsCDs["Show Settings"].ShowOnCooldownOnly or (TehrsCDs["Show Settings"].ShowOnCooldownOnly and cdDTime ~= timeColor.."READY|r") then
+											cdCount = cdCount + 1 
+											cdTexts[cdCount] = {
+												aura_env.raidCDsIndentAmount..nameColor..newName,
+												nameColor..cdName,
+												cdDTime
+											}
+										end
+									end								
+								end
+							end           
+						end        
+					end    
+				end
+				if TehrsCDs["Show Settings"].ShowEmptySections or #cdTexts > 0 then
+					TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText.."\n|cFF00A2E8"..titles[1].."               |r\n\n";
+					TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText.."\n\n\n";
+					TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText.."\n\n\n"; 
+
+					if #cdTexts > 0 then 
+						for index, value in pairs(cdTexts) do
+							TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText..value[1].."\n";
+							TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText..value[2].."\n";
+							TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText..value[3].."\n";  
+						end
+					end
+				end			
+			end   
+			
+			if (TehrsCDs["Show Settings"].allCDs and TehrsCDs.instanceType ~= "raid" and GetNumGroupMembers()<20) or (TehrsCDs["Show Settings"].allCDs_inRaid and (TehrsCDs.instanceType == "raid" or GetNumGroupMembers()>19)) then  
+				
+				local cdCount = 0;
+				local cdTexts = { }; 
+				local allCDs = { };
+				
+				allCDs["|cFFFF7D0A"] = TehrsCDs._raidCDs_druids;
+				allCDs["|cFF00FF96"] = TehrsCDs._raidCDs_monks;
+				allCDs["|cFFF58CBA"] = TehrsCDs._raidCDs_paladins;
+				allCDs["|cFFFFFFFF"] = TehrsCDs._raidCDs_priests;
+				allCDs["|cFF0070DE"] = TehrsCDs._raidCDs_shamans;
+				allCDs["|cFFC79C6E"] = TehrsCDs._raidCDs_warriors;
+				allCDs["|cFFA330C9"] = TehrsCDs._raidCDs_dhs;  			
+				
+				for theCDGroupColor, theCDGroup in pairs(allCDs) do
+					if (theCDGroup ~= nil) then        
+						for name, cdData in pairs(theCDGroup) do             
+							for cdName, cdTime in aura_env.sortedPairs(cdData) do 
+								
+								if not ((not TehrsCDs["Show Settings"].CShout and cdName == "R-Cry")
+									or (not TehrsCDs["Show Settings"].DHymn and cdName == "D-Hymn")
+									or (not TehrsCDs["Show Settings"].VE and cdName == "VE")
+									or (not TehrsCDs["Show Settings"].VE and cdName == "VE+")
+									or (not TehrsCDs["Show Settings"].Apotheosis and cdName == "Apotheosis")
+									or (not TehrsCDs["Show Settings"].Salvation and cdName == "Salvation")								
+									or (not TehrsCDs["Show Settings"].Barrier and cdName == "Barrier")
+									or (not TehrsCDs["Show Settings"].Barrier and cdName == "Barrier+")
+									or (not TehrsCDs["Show Settings"].Barrier and cdName == "Rapture")
+									or (not TehrsCDs["Show Settings"].Darkness and cdName == "Darkness")
+									or (not TehrsCDs["Show Settings"].Tranq and cdName == "Tranq")
+									or (not TehrsCDs["Show Settings"].Tranq and cdName == "Tranq+")
+									or (not TehrsCDs["Show Settings"].Flourish and cdName == "Flourish")								
+									or (not TehrsCDs["Show Settings"].AuraM and cdName == "Aura-M")
+									or (not TehrsCDs["Show Settings"].Wings and cdName == "Wings")			
+									or (not TehrsCDs["Show Settings"].Wings and cdName == "Wings+")										
+									or (not TehrsCDs["Show Settings"].Aegis and cdName == "Aegis")
+									or (not TehrsCDs["Show Settings"].AProt and cdName == "A-Prot")
+									or (not TehrsCDs["Show Settings"].AG and cdName == "AG")
+									or (not TehrsCDs["Show Settings"].HTide and cdName == "H-Tide")
+									or (not TehrsCDs["Show Settings"].Ascendance and cdName == "Ascendance")
+									or (not TehrsCDs["Show Settings"].SLT and cdName == "SLT")							
+									or (not TehrsCDs["Show Settings"].Revival and cdName == "Revival")) then
+									
+									local timeColor;
+									local nameColor;
+									local cdDTime = cdTime - GetTime();  
+									local unitName = UnitName(name)                            
+									local unitRealm = GetRealmName(name)                                
+									
+									if aura_env.recolor then
+										if (UnitHealth(name) <= 0 or UnitIsGhost(name)) then
+											nameColor = aura_env.deadColor
+											timeColor = aura_env.deadColor										
+										else    
+											nameColor = theCDGroupColor
+											timeColor = aura_env.colorByTime(cdDTime)
+										end      
+									else    
+										nameColor = theCDGroupColor
+										timeColor = aura_env.colorByTime(cdDTime)                   
+									end    
+									
+									if (cdDTime <= 0) then
+										cdDTime = timeColor.."READY|r";
+									else
+										cdDTime = timeColor..string.format("%01d:%02d", math.floor(cdDTime/60), math.floor(cdDTime - 60*math.floor(cdDTime/60))).."|r"
+									end            
+									
+									dashpos = string.find(name,"-");
+									if (dashpos ~= nil) then name = string.sub(name, 0, dashpos - 1) end
+									
+									newName = string.sub(name, 0, aura_env.nameMaxLength);
+									
+									if (string.len(newName) <  string.len(name)) then newName = newName..".." end
+									
+									for k,v in pairs(aura_env.Supporters) do
+										if (k == name) and (v == unitRealm) then
+											newName = "*"..newName
+										end
+									end
+									
+									if abilityNames ~= nil then
+										for k,v in pairs(abilityNames) do
+											if k == cdName then
+												cdName = v
+											end    
+										end    
+									end
+									
+									if newName ~= nil then
+										if not TehrsCDs["Show Settings"].ShowOnCooldownOnly or (TehrsCDs["Show Settings"].ShowOnCooldownOnly and cdDTime ~= timeColor.."READY|r") then
+											cdCount = cdCount + 1 
+											cdTexts[cdCount] = {
+												aura_env.raidCDsIndentAmount..nameColor..newName,
+												nameColor..cdName,
+												cdDTime
+											}
+										end
+									end								
+								end
+							end           
+						end        
+					end    
+				end
+				if TehrsCDs["Show Settings"].ShowEmptySections or #cdTexts > 0 then
+					TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText.."\n|cFF00A2E8"..titles[2].."               |r\n\n";
+					TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText.."\n\n\n";
+					TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText.."\n\n\n"; 
+
+					if #cdTexts > 0 then 
+						for index, value in pairs(cdTexts) do
+							TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText..value[1].."\n";
+							TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText..value[2].."\n";
+							TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText..value[3].."\n";  
+						end
+					end
+				end			
+			end
+			
+			if (TehrsCDs["Show Settings"].allUtility and TehrsCDs.instanceType ~= "raid" and GetNumGroupMembers()<20) or (TehrsCDs["Show Settings"].allUtility_inRaid and (TehrsCDs.instanceType == "raid" or GetNumGroupMembers()>19)) then 
+				
+				local cdCount = 0;
+				local cdTexts = { }; 
+				local allUtility = { };
+				
+				allUtility["|cFFC41F3B"] = TehrsCDs._utilityCDs_dks;    
+				allUtility["|cFFA330C9"] = TehrsCDs._utilityCDs_dhs;    
+				allUtility["|cFFFF7D0A"] = TehrsCDs._utilityCDs_druids;
+				allUtility["|cFFF58CBA"] = TehrsCDs._utilityCDs_paladins;
+				allUtility["|cFFFFFFFF"] = TehrsCDs._utilityCDs_priests;
+				allUtility["|cFF0070DE"] = TehrsCDs._utilityCDs_shamans;  
+				allUtility["|cFFABD473"] = TehrsCDs._utilityCDs_hunters;       
+				allUtility["|cFFFFF569"] = TehrsCDs._utilityCDs_rogues;        
+				allUtility["|cFFB4B4B4"] = TehrsCDs._utilityCDs_nightelf;           
+				
+				for theCDGroupColor, theCDGroup in pairs(allUtility) do
+					if (theCDGroup ~= nil) then        
+						for name, cdData in pairs(theCDGroup) do             
+							for cdName, cdTime in aura_env.sortedPairs(cdData) do 
+								
+								if not ((not TehrsCDs["Show Settings"].Hope and cdName == "Hope")
+									or (not TehrsCDs["Show Settings"].Grip and cdName == "Grip")
+									or (not TehrsCDs["Show Settings"].Innervate and cdName == "Innervate")
+									or (not TehrsCDs["Show Settings"].Treants and cdName == "Treants")								
+									or (not TehrsCDs["Show Settings"].Roar and cdName == "Roar")
+									or (not TehrsCDs["Show Settings"].BoP and cdName == "BoP")
+									or (not TehrsCDs["Show Settings"].WindRush and cdName == "Wind Rush")
+									or (not TehrsCDs["Show Settings"].Misdirect and cdName == "Misdirect")
+									or (not TehrsCDs["Show Settings"].Shadowmeld and cdName == "Shadowmeld")
+									or (not TehrsCDs["Show Settings"].Shroud and cdName == "Shroud")
+									or (not TehrsCDs["Show Settings"].Tricks and cdName == "Tricks")) then                         
+									
+									local timeColor;
+									local nameColor;
+									local cdDTime = cdTime - GetTime();   
+									local unitName = UnitName(name)                            
+									local unitRealm = GetRealmName(name)                                
+									
+									if aura_env.recolor then
+										if (UnitHealth(name) <= 0 or UnitIsGhost(name)) then
+											nameColor = aura_env.deadColor
+											timeColor = aura_env.deadColor
+										elseif not IsItemInRange(34471,name) and 
+											(cdName == "Grip" or cdName == "Innervate" or cdName == "BoP" or cdName == "Misdirect" or cdName == "Tricks") then
+											nameColor = aura_env.outOfRangeColor
+											timeColor = aura_env.outOfRangeColor									
+										else    
+											nameColor = theCDGroupColor
+											timeColor = aura_env.colorByTime(cdDTime)
+										end      
+									else    
+										nameColor = theCDGroupColor
+										timeColor = aura_env.colorByTime(cdDTime)                   
+									end    
+									
+									if (cdDTime <= 0) then
+										cdDTime = timeColor.."READY|r";
+									else
+										cdDTime = timeColor..string.format("%01d:%02d", math.floor(cdDTime/60), math.floor(cdDTime - 60*math.floor(cdDTime/60))).."|r"
+									end            
+									
+									dashpos = string.find(name,"-");
+									if (dashpos ~= nil) then name = string.sub(name, 0, dashpos - 1) end
+									
+									newName = string.sub(name, 0, aura_env.nameMaxLength);
+									
+									if (string.len(newName) <  string.len(name)) then newName = newName..".." end
+									
+									for k,v in pairs(aura_env.Supporters) do
+										if (k == name) and (v == unitRealm) then
+											newName = "*"..newName
+										end
+									end
+									
+									if abilityNames ~= nil then
+										for k,v in pairs(abilityNames) do
+											if k == cdName then
+												cdName = v
+											end    
+										end    
+									end
+									
+									if newName ~= nil then
+										if not TehrsCDs["Show Settings"].ShowOnCooldownOnly or (TehrsCDs["Show Settings"].ShowOnCooldownOnly and cdDTime ~= timeColor.."READY|r") then
+											cdCount = cdCount + 1 
+											cdTexts[cdCount] = {
+												aura_env.raidCDsIndentAmount..nameColor..newName,
+												nameColor..cdName,
+												cdDTime
+											}
+										end
+									end								
+								end
+							end           
+						end        
+					end    
+				end
+				if TehrsCDs["Show Settings"].ShowEmptySections or #cdTexts > 0 then
+					TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText.."\n|cFF00A2E8"..titles[3].."               |r\n\n";
+					TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText.."\n\n\n";
+					TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText.."\n\n\n"; 
+
+					if #cdTexts > 0 then 
+						for index, value in pairs(cdTexts) do
+							TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText..value[1].."\n";
+							TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText..value[2].."\n";
+							TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText..value[3].."\n";  
+						end
+					end
+				end			
+			end  
+			
+			if (TehrsCDs["Show Settings"].allImmunityCDs and TehrsCDs.instanceType ~= "raid" and GetNumGroupMembers()<20) or (TehrsCDs["Show Settings"].allImmunityCDs_inRaid and (TehrsCDs.instanceType == "raid" or GetNumGroupMembers()>19)) then                
+				
+				local cdCount = 0;
+				local cdTexts = { }; 
+				local allImmunities = { };
+				
+				allImmunities["|cFFABD473"] = TehrsCDs._immunityCDs_hunters;
+				allImmunities["|cFF69CCF0"] = TehrsCDs._immunityCDs_mages;
+				allImmunities["|cFFF58CBA"] = TehrsCDs._immunityCDs_paladins;         
+				allImmunities["|cFFFFF569"] = TehrsCDs._immunityCDs_rogues;
+				allImmunities["|cFFA330C9"] = TehrsCDs._immunityCDs_dhs;    
+				
+				for theCDGroupColor, theCDGroup in pairs(allImmunities) do
+					if (theCDGroup ~= nil) then        
+						for name, cdData in pairs(theCDGroup) do             
+							for cdName, cdTime in aura_env.sortedPairs(cdData) do 
+								
+								if not ((not TehrsCDs["Show Settings"].Netherwalk and cdName == "Netherwalk")
+									or (not TehrsCDs["Show Settings"].Bubble and cdName == "Bubble")
+									or (not TehrsCDs["Show Settings"].Bubble and cdName == "Bubble+")
+									or (not TehrsCDs["Show Settings"].Turtle and cdName == "Turtle")
+									or (not TehrsCDs["Show Settings"].Turtle and cdName == "Turtle+")
+									or (not TehrsCDs["Show Settings"].Cloak and cdName == "Cloak")
+									or (not TehrsCDs["Show Settings"].Block and cdName == "Block")
+									or (not TehrsCDs["Show Settings"].Block and cdName == "Block+")) then                            
+									
+									local timeColor;
+									local nameColor;
+									local cdDTime = cdTime - GetTime();  
+									local unitName = UnitName(name)                            
+									local unitRealm = GetRealmName(name)                                
+									
+									if aura_env.recolor then
+										if (UnitHealth(name) <= 0 or UnitIsGhost(name)) then
+											nameColor = aura_env.deadColor
+											timeColor = aura_env.deadColor									
+										else    
+											nameColor = theCDGroupColor
+											timeColor = aura_env.colorByTime(cdDTime)
+										end      
+									else    
+										nameColor = theCDGroupColor
+										timeColor = aura_env.colorByTime(cdDTime)                   
+									end    
+									
+									if (cdDTime <= 0) then
+										cdDTime = timeColor.."READY|r";
+									else
+										cdDTime = timeColor..string.format("%01d:%02d", math.floor(cdDTime/60), math.floor(cdDTime - 60*math.floor(cdDTime/60))).."|r"
+									end            
+									
+									dashpos = string.find(name,"-");
+									if (dashpos ~= nil) then name = string.sub(name, 0, dashpos - 1) end
+									
+									newName = string.sub(name, 0, aura_env.nameMaxLength);
+									
+									if (string.len(newName) <  string.len(name)) then newName = newName..".." end
+									
+									for k,v in pairs(aura_env.Supporters) do
+										if (k == name) and (v == unitRealm) then
+											newName = "*"..newName
+										end
+									end
+									
+									if abilityNames ~= nil then
+										for k,v in pairs(abilityNames) do
+											if k == cdName then
+												cdName = v
+											end    
+										end    
+									end
+									
+									if newName ~= nil then
+										if not TehrsCDs["Show Settings"].ShowOnCooldownOnly or (TehrsCDs["Show Settings"].ShowOnCooldownOnly and cdDTime ~= timeColor.."READY|r") then
+											cdCount = cdCount + 1 
+											cdTexts[cdCount] = {
+												aura_env.raidCDsIndentAmount..nameColor..newName,
+												nameColor..cdName,
+												cdDTime
+											}
+										end
+									end								
+								end
+							end           
+						end        
+					end    
+				end
+				if TehrsCDs["Show Settings"].ShowEmptySections or #cdTexts > 0 then
+					TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText.."\n|cFF00A2E8"..titles[4].."               |r\n\n";
+					TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText.."\n\n\n";
+					TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText.."\n\n\n"; 
+
+					if #cdTexts > 0 then 
+						for index, value in pairs(cdTexts) do
+							TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText..value[1].."\n";
+							TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText..value[2].."\n";
+							TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText..value[3].."\n";  
+						end
+					end
+				end			
+			end         
+			
+			if (TehrsCDs["Show Settings"].allAoECCs and TehrsCDs.instanceType ~= "raid" and GetNumGroupMembers()<20) or (TehrsCDs["Show Settings"].allAoECCs_inRaid and (TehrsCDs.instanceType == "raid" or GetNumGroupMembers()>19)) then        
+				
+				local cdCount = 0;
+				local cdTexts = { }; 
+				local allCDs = { };
+				
+				allCDs["|cFFFF7D0A"] = TehrsCDs._aoeCCs_druids;
+				allCDs["|cFFFFFFFF"] = TehrsCDs._aoeCCs_priests;        
+				allCDs["|cFFABD473"] = TehrsCDs._aoeCCs_hunters;
+				allCDs["|cFF69CCF0"] = TehrsCDs._aoeCCs_mages;
+				allCDs["|cFF00FF96"] = TehrsCDs._aoeCCs_monks;      
+				allCDs["|cFF0070DE"] = TehrsCDs._aoeCCs_shamans;       
+				allCDs["|cFFC79C6E"] = TehrsCDs._aoeCCs_warriors;  
+				allCDs["|cFFA330C9"] = TehrsCDs._aoeCCs_dhs;                     
+				allCDs["|cFF9482C9"] = TehrsCDs._aoeCCs_warlocks; 
+				allCDs["|cFFC41F3B"] = TehrsCDs._aoeCCs_dks;                 
+				allCDs["|cFFB4B4B4"] = TehrsCDs._aoeCCs_tauren;      
+				allCDs["|cFFB4B4B4"] = TehrsCDs._aoeCCs_hmtauren;			
+				
+				for theCDGroupColor, theCDGroup in pairs(allCDs) do
+					if (theCDGroup ~= nil) then        
+						for name, cdData in pairs(theCDGroup) do             
+							for cdName, cdTime in aura_env.sortedPairs(cdData) do 
+								
+								if not ((not TehrsCDs["Show Settings"].Stomp and cdName == "Stomp")
+									or (not TehrsCDs["Show Settings"].BullRush and cdName == "Bull Rush")
+									or (not TehrsCDs["Show Settings"].Ursol and cdName == "Ursol")
+									or (not TehrsCDs["Show Settings"].Typhoon and cdName == "Typhoon")
+									or (not TehrsCDs["Show Settings"].MindBomb and cdName == "Mind Bomb")
+									or (not TehrsCDs["Show Settings"].Shockwave and cdName == "Shockwave")
+									or (not TehrsCDs["Show Settings"].Shockwave and cdName == "Shockwave+")
+									or (not TehrsCDs["Show Settings"].Chains and cdName == "Chains")
+									or (not TehrsCDs["Show Settings"].Grasp and cdName == "Grasp")
+									or (not TehrsCDs["Show Settings"].Grasp and cdName == "Grasp+")
+									or (not TehrsCDs["Show Settings"].CapTotem and cdName == "Cap Totem")
+									or (not TehrsCDs["Show Settings"].CapTotem and cdName == "Cap Totem+")
+									or (not TehrsCDs["Show Settings"].Binding and cdName == "Binding")
+									or (not TehrsCDs["Show Settings"].Infernal and cdName == "Infernal")
+									or (not TehrsCDs["Show Settings"].Thunderstorm and cdName == "Thunderstorm")
+									or (not TehrsCDs["Show Settings"].Ring and cdName == "Ring")
+									or (not TehrsCDs["Show Settings"].Shining and cdName == "Shining")								
+									or (not TehrsCDs["Show Settings"].Shadowfury and cdName == "Shadowfury+")
+									or (not TehrsCDs["Show Settings"].Shadowfury and cdName == "Shadowfury")
+									or (not TehrsCDs["Show Settings"].Sweep and cdName == "Sweep")
+									or (not TehrsCDs["Show Settings"].Sweep and cdName == "Sweep+")
+									or (not TehrsCDs["Show Settings"].Nova and cdName == "Nova")
+									or (not TehrsCDs["Show Settings"].Nova and cdName == "Nova+")) then                                 
+									
+									local timeColor;
+									local nameColor;
+									local cdDTime = cdTime - GetTime(); 
+									local unitName = UnitName(name)                            
+									local unitRealm = GetRealmName(name)                                
+									
+									if aura_env.recolor then
+										if (UnitHealth(name) <= 0 or UnitIsGhost(name)) then
+											nameColor = aura_env.deadColor
+											timeColor = aura_env.deadColor									
+										else    
+											nameColor = theCDGroupColor
+											timeColor = aura_env.colorByTime(cdDTime)
+										end      
+									else    
+										nameColor = theCDGroupColor
+										timeColor = aura_env.colorByTime(cdDTime)                   
+									end    
+									
+									if (cdDTime <= 0) then
+										cdDTime = timeColor.."READY|r";
+									else
+										cdDTime = timeColor..string.format("%01d:%02d", math.floor(cdDTime/60), math.floor(cdDTime - 60*math.floor(cdDTime/60))).."|r"
+									end            
+									
+									dashpos = string.find(name,"-");
+									if (dashpos ~= nil) then name = string.sub(name, 0, dashpos - 1) end
+									
+									newName = string.sub(name, 0, aura_env.nameMaxLength);
+									
+									if (string.len(newName) <  string.len(name)) then newName = newName..".." end
+									
+									for k,v in pairs(aura_env.Supporters) do
+										if (k == name) and (v == unitRealm) then
+											newName = "*"..newName
+										end
+									end
+									
+									if abilityNames ~= nil then
+										for k,v in pairs(abilityNames) do
+											if k == cdName then
+												cdName = v
+											end    
+										end    
+									end
+									
+									if newName ~= nil then
+										if not TehrsCDs["Show Settings"].ShowOnCooldownOnly or (TehrsCDs["Show Settings"].ShowOnCooldownOnly and cdDTime ~= timeColor.."READY|r") then
+											cdCount = cdCount + 1 
+											cdTexts[cdCount] = {
+												aura_env.raidCDsIndentAmount..nameColor..newName,
+												nameColor..cdName,
+												cdDTime
+											}
+										end
+									end								
+								end
+							end           
+						end        
+					end    
+				end
+				if TehrsCDs["Show Settings"].ShowEmptySections or #cdTexts > 0 then
+					TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText.."\n|cFF00A2E8"..titles[5].."               |r\n\n";
+					TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText.."\n\n\n";
+					TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText.."\n\n\n"; 
+
+					if #cdTexts > 0 then 
+						for index, value in pairs(cdTexts) do
+							TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText..value[1].."\n";
+							TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText..value[2].."\n";
+							TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText..value[3].."\n";  
+						end
+					end
+				end			
+			end    
+			
+			if (TehrsCDs["Show Settings"].allInterrupts and TehrsCDs.instanceType ~= "raid" and GetNumGroupMembers()<20) or (TehrsCDs["Show Settings"].allInterrupts_inRaid and (TehrsCDs.instanceType == "raid" or GetNumGroupMembers()>19)) then
+				
+				local cdCount = 0;
+				local cdTexts = { }; 
+				local allinterrupts = { };
+				
+				allinterrupts["|cFFFF7D0A"] = TehrsCDs._interrupts_druids;
+				allinterrupts["|cFFFFFFFF"] = TehrsCDs._interrupts_priests;        
+				allinterrupts["|cFFABD473"] = TehrsCDs._interrupts_hunters;
+				allinterrupts["|cFF69CCF0"] = TehrsCDs._interrupts_mages;
+				allinterrupts["|cFF00FF96"] = TehrsCDs._interrupts_monks;
+				allinterrupts["|cFFF58CBA"] = TehrsCDs._interrupts_paladins;        
+				allinterrupts["|cFF0070DE"] = TehrsCDs._interrupts_shamans;        
+				allinterrupts["|cFFC41F3B"] = TehrsCDs._interrupts_dks;         
+				allinterrupts["|cFFFFF569"] = TehrsCDs._interrupts_rogues;
+				allinterrupts["|cFFC79C6E"] = TehrsCDs._interrupts_warriors;
+				allinterrupts["|cFFA330C9"] = TehrsCDs._interrupts_dhs;
+				allinterrupts["|cFF9482C9"] = TehrsCDs._interrupts_warlocks;      
+				allinterrupts["|cFFB4B4B4"] = TehrsCDs._interrupts_belfs; 		
+				
+				for theCDGroupColor, theCDGroup in pairs(allinterrupts) do
+					if (theCDGroup ~= nil) then        
+						for name, cdData in pairs(theCDGroup) do             
+							for cdName, cdTime in aura_env.sortedPairs(cdData) do 
+								
+								if not( (not TehrsCDs["Show Settings"].Pummel and cdName == "Pummel")
+									--[[ or (not TehrsCDs["Show Settings"].Torrent and cdName == "Torrent")
+									Arcane Torrent isn't an interrupt anymore! Holding onto this until I add dispels.
+									]]
+									or (not TehrsCDs["Show Settings"].Silence and cdName == "Silence")
+									or (not TehrsCDs["Show Settings"].Silence and cdName == "Silence+")
+									or (not TehrsCDs["Show Settings"].Disrupt and cdName == "Disrupt")
+									or (not TehrsCDs["Show Settings"].SigilSilence and cdName == "S-Silence")
+									or (not TehrsCDs["Show Settings"].SigilSilence and cdName == "S-Silence+")
+									or (not TehrsCDs["Show Settings"].SBash and cdName == "S-Bash")
+									or (not TehrsCDs["Show Settings"].SBeam and cdName == "S-Beam")
+									or (not TehrsCDs["Show Settings"].MindFreeze and cdName == "M-Freeze")
+									or (not TehrsCDs["Show Settings"].Rebuke and cdName == "Rebuke")
+									or (not TehrsCDs["Show Settings"].WShear and cdName == "W-Shear")
+									or (not TehrsCDs["Show Settings"].Muzzle and cdName == "Muzzle")
+									or (not TehrsCDs["Show Settings"].CShot and cdName == "C-Shot")
+									or (not TehrsCDs["Show Settings"].Kick and cdName == "Kick")
+									or (not TehrsCDs["Show Settings"].CSpell and cdName == "C-Spell")
+									or (not TehrsCDs["Show Settings"].SpellLock and cdName == "Spell Lock")
+									or (not TehrsCDs["Show Settings"].SStrike and cdName == "S-Strike")) then                        
+									
+									local timeColor;
+									local nameColor;
+									local cdDTime = cdTime - GetTime(); 
+									local unitName = UnitName(name)                            
+									local unitRealm = GetRealmName(name)                                
+									
+									if aura_env.recolor then
+										if (UnitHealth(name) <= 0 or UnitIsGhost(name)) then
+											nameColor = aura_env.deadColor
+											timeColor = aura_env.deadColor									
+										else    
+											nameColor = theCDGroupColor
+											timeColor = aura_env.colorByTime(cdDTime)                    
+										end      
+									else    
+										nameColor = theCDGroupColor
+										timeColor = aura_env.colorByTime(cdDTime)                   
+									end     
+				  
+									if (cdDTime <= 0) then
+										cdDTime = timeColor.."READY|r";
+									else
+										cdDTime = timeColor..math.floor(cdDTime).."|r";
+									end            
+									
+									dashpos = string.find(name,"-");
+									if (dashpos ~= nil) then name = string.sub(name, 0, dashpos - 1) end
+									
+									newName = string.sub(name, 0, aura_env.nameMaxLength);
+									
+									if (string.len(newName) <  string.len(name)) then newName = newName..".." end
+									
+									for k,v in pairs(aura_env.Supporters) do
+										if (k == name) and (v == unitRealm) then
+											newName = "*"..newName
+										end
+									end
+									
+									if abilityNames ~= nil then
+										for k,v in pairs(abilityNames) do
+											if k == cdName then
+												cdName = v
+											end    
+										end    
+									end
+									
+									if newName ~= nil then
+										if not TehrsCDs["Show Settings"].ShowOnCooldownOnly or (TehrsCDs["Show Settings"].ShowOnCooldownOnly and cdDTime ~= timeColor.."READY|r") then
+											cdCount = cdCount + 1 
+											cdTexts[cdCount] = {
+												aura_env.raidCDsIndentAmount..nameColor..newName,
+												nameColor..cdName,
+												cdDTime
+											}
+										end
+									end	
+								end
+							end           
+						end        
+					end    
+				end
+				if TehrsCDs["Show Settings"].ShowEmptySections or #cdTexts > 0 then
+					TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText.."\n|cFF00A2E8"..titles[6].."               |r\n\n";
+					TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText.."\n\n\n";
+					TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText.."\n\n\n"; 
+
+					if #cdTexts > 0 then 
+						for index, value in pairs(cdTexts) do
+							TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText..value[1].."\n";
+							TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText..value[2].."\n";
+							TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText..value[3].."\n";  
+						end
+					end
+				end
+			end
+			
+			if (TehrsCDs["Show Settings"].allRezzes and TehrsCDs.instanceType ~= "raid" and GetNumGroupMembers()<20) or ((TehrsCDs["Show Settings"].allRezzes_inRaid or TehrsCDs["Show Settings"].Ankh_inRaid or TehrsCDs["Show Settings"].raidBattleRezTimer) and (TehrsCDs.instanceType == "raid" or GetNumGroupMembers()>19)) then
+				
+				local cdCount = 0;
+				local cdTexts = { }; 
+				local allRezzes = { };
+				local rezType = titles[7]
+				
+				if (TehrsCDs.instanceDifficulty == 8) then
+					allRezzes["|cFF0070DE"] = TehrsCDs._rezCDs_shamans; 
+					rezType = titles[8]
+				end
+				
+				if (TehrsCDs.instanceDifficulty ~= 8) and ((TehrsCDs["Show Settings"].allRezzes and TehrsCDs.instanceType ~= "raid" and GetNumGroupMembers()<20) or (not TehrsCDs.encounterStart and TehrsCDs["Show Settings"].allRezzes_inRaid and (TehrsCDs.instanceType == "raid" or GetNumGroupMembers()>19))) then    
+					allRezzes["|cFFC41F3B"] = TehrsCDs._rezCDs_dks;      
+					allRezzes["|cFFFF7D0A"] = TehrsCDs._rezCDs_druids; 
+					allRezzes["|cFF9482C9"] = TehrsCDs._rezCDs_warlocks;
+					allRezzes["|cFF0070DE"] = TehrsCDs._rezCDs_shamans; 
+				elseif (TehrsCDs["Show Settings"].Ankh_inRaid) then
+					allRezzes["|cFF0070DE"] = TehrsCDs._rezCDs_shamans; 
+				end
+				
+				for theCDGroupColor, theCDGroup in pairs(allRezzes) do
+					if (theCDGroup ~= nil) then        
+						for name, cdData in pairs(theCDGroup) do             
+							for cdName, cdTime in aura_env.sortedPairs(cdData) do 
+								
+								if not ((not TehrsCDs["Show Settings"].Rebirth and cdName == "Rebirth")
+									or (not TehrsCDs["Show Settings"].RaiseAlly and cdName == "Raise Ally")
+									or (not TehrsCDs["Show Settings"].Ankh and cdName == "Ankh")
+									or (not TehrsCDs["Show Settings"].Soulstone and cdName == "Soulstone")) then 
+									
+									local timeColor;
+									local nameColor;
+									local cdDTime = cdTime - GetTime();
+									local unitName = UnitName(name)                            
+									local unitRealm = GetRealmName(name)
+									
+									if aura_env.recolor then
+										if (UnitHealth(name) <= 0 or UnitIsGhost(name)) then
+											nameColor = aura_env.deadColor
+											timeColor = aura_env.deadColor									
+										else    
+											nameColor = theCDGroupColor
+											timeColor = aura_env.colorByTime(cdDTime)                    
+										end      
+									else    
+										nameColor = theCDGroupColor
+										timeColor = aura_env.colorByTime(cdDTime)                   
+									end 
+												
+									if (cdDTime <= 0) then
+										cdDTime = timeColor.."READY|r";
+									else
+										cdDTime = timeColor..string.format("%01d:%02d", math.floor(cdDTime/60), math.floor(cdDTime - 60*math.floor(cdDTime/60))).."|r"
+									end                     
+									
+									dashpos = string.find(name,"-");
+									if (dashpos ~= nil) then name = string.sub(name, 0, dashpos - 1) end
+									
+									newName = string.sub(name, 0, aura_env.nameMaxLength);
+									
+									if (string.len(newName) <  string.len(name)) then newName = newName..".." end
+									
+									for k,v in pairs(aura_env.Supporters) do
+										if (k == name) and (v == unitRealm) then
+											newName = "*"..newName
+										end
+									end
+									
+									if abilityNames ~= nil then
+										for k,v in pairs(abilityNames) do
+											if k == cdName then
+												cdName = v
+											end    
+										end    
+									end
+									
+									if newName ~= nil then
+										if not TehrsCDs["Show Settings"].ShowOnCooldownOnly or (TehrsCDs["Show Settings"].ShowOnCooldownOnly and cdDTime ~= timeColor.."READY|r") then
+											cdCount = cdCount + 1 
+											cdTexts[cdCount] = {
+												aura_env.raidCDsIndentAmount..nameColor..newName,
+												nameColor..cdName,
+												cdDTime
+											}
+										end
+									end	
+								end
+							end           
+						end        
+					end    
+				end
+				
+				if TehrsCDs["Show Settings"].ShowEmptySections or #cdTexts > 0 then
+					TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText.."\n|cFF00A2E8"..rezType.."               |r\n\n";
+					TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText.."\n\n\n";
+					TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText.."\n\n\n"; 
+
+					if #cdTexts > 0 then 
+						for index, value in pairs(cdTexts) do
+							TehrsCDs._raidCDs_namesText =  TehrsCDs._raidCDs_namesText..value[1].."\n";
+							TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText..value[2].."\n";
+							TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText..value[3].."\n";  
+						end
+					end
+				end			
+				
+				if ((TehrsCDs["Show Settings"].mythicDungeonBattleRezTimer and TehrsCDs.instanceGroupType == "party" and TehrsCDs.instanceDifficulty == 8) or (TehrsCDs["Show Settings"].raidBattleRezTimer and TehrsCDs.instanceType == "raid")) and GetSpellCharges(20484) then   
+					
+					-- Credit to Krazyito for this code http://www.mmo-champion.com/threads/1686033-Weak-Auras-Battle-Res-Monitor-Looking-for-feedback     
+					
+					local rezCharges, _, started, duration = GetSpellCharges(20484)
+					local timerString = ""            
+					
+					if started then
+						local brezTimer = duration - (GetTime() - started)
+						local m = floor(brezTimer/60)
+						local s = mod(brezTimer, 60)
+						timerString =  string.format("%01d:%02d", m, s)
+					end
+					
+					if rezCharges == nil then
+						rezCharges = 0
+					end
+					
+					if rezCharges == 0 then
+						rezCharges = "|cFF333333"..rezCharges.."|r"
+					else
+						rezCharges ="|cFF00FF00"..rezCharges.."|r" 
+					end
+					
+					TehrsCDs._raidCDs_namesText = TehrsCDs._raidCDs_namesText..aura_env.raidCDsIndentAmount.."|cFFFFFFFFCharges|r:\n"
+					TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText..rezCharges.."\n";
+					TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText..timerString.."\n";
+				end        
+			end          
+		end
+		
+		if WeakAuras.regions[backgroundName] and TehrsCDs.minmaxDisplay then
+			_, TehrsCDs.NamesTextLineCount = string.gsub(TehrsCDs._raidCDs_namesText, "\n", "");
+			local newWidth = 200 + (fontSize-11)*15
+			local newHeight = TehrsCDs.NamesTextLineCount * fontSize
+			
+			WeakAuras.regions[backgroundName].region:SetHeight(newHeight); 
+			WeakAuras.regions[backgroundName].region:SetWidth(newWidth) 
+			if TehrsCDs.minmaxDisplay then
+				_,_,_,TehrsCDs.BackgroundAlpha = region.bar.bg:GetVertexColor()
+			end
+			
+			--region:SetHeight(newHeight); 
+			--region:SetWidth(newWidth) 
+		end
+		
+		-- Create text overlays
+		if not region.namesText then
+			local namesTextFrame = CreateFrame("frame", nil, region);
+			local namesText = namesTextFrame:CreateFontString(nil, "OVERLAY");
+			region.namesText = namesText
+		end		
+		if not region.CDText then
+			local CDTextFrame = CreateFrame("frame", nil, region);
+			local CDText = CDTextFrame:CreateFontString(nil, "OVERLAY");
+			region.CDText = CDText
+		end
+		if not region.timeText then
+			local timeTextFrame = CreateFrame("frame", nil, region);
+			local timeText = timeTextFrame:CreateFontString(nil, "OVERLAY");
+			region.timeText = timeText
+		end	
+		
+		-- deal with changing anchor points
+		if point == "BOTTOMLEFT" then
+			CDTextAnchor = "BOTTOM"
+			timeTextAnchor = "BOTTOMRIGHT"
+		else
+			point = "TOPLEFT"
+			CDTextAnchor = "TOP"
+			timeTextAnchor = "TOPRIGHT"
+			
+			TehrsCDs._raidCDs_namesText = TehrsCDs._raidCDs_namesText.."                                                          \n";
+			TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText.."                                                             \n";
+			TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText.."                                                             \n";    
+		end
+		
+		region.namesText:GetParent():SetFrameLevel(backgroundFrameLevel + 1)
+		region.namesText:ClearAllPoints()
+		region.namesText:SetPoint(point, relativeTo, relativePoint, xOffset, aura_env.textyOffset + yOffset);
+		region.namesText:SetFont(fontName, fontSize, fontFlags) 
+		region.namesText:SetJustifyH("LEFT")	
+		region.namesText:SetJustifyV(CDTextAnchor)	
+		region.namesText:SetText(TehrsCDs._raidCDs_namesText)
+			
+		region.CDText:GetParent():SetFrameLevel(backgroundFrameLevel + 1)
+		region.CDText:ClearAllPoints()
+		region.CDText:SetPoint(CDTextAnchor, region, CDTextAnchor, aura_env.CDTextxOffset, aura_env.textyOffset + yOffset);
+		region.CDText:SetFont(fontName, fontSize, fontFlags) 
+		region.CDText:SetJustifyH("CENTER")	
+		region.CDText:SetJustifyV(CDTextAnchor)	
+		region.CDText:SetText(TehrsCDs._raidCDs_cdText)
+		
+		region.timeText:GetParent():SetFrameLevel(backgroundFrameLevel + 1)
+		region.timeText:ClearAllPoints()
+		region.timeText:SetPoint(timeTextAnchor, region, timeTextAnchor, aura_env.timeTextxOffset, aura_env.textyOffset + yOffset);
+		region.timeText:SetFont(fontName, fontSize, fontFlags) 
+		region.timeText:SetJustifyH("RIGHT")	
+		region.timeText:SetJustifyV(CDTextAnchor)	
+		region.timeText:SetText(TehrsCDs._raidCDs_timeText)
+	end
+	
+    return ""--TehrsCDs._raidCDs_namesText  
+end
+
