@@ -907,6 +907,7 @@ function ()
                 
                 local rezCharges, _, started, duration = GetSpellCharges(20484)
                 local timerString = ""            
+                local extraSpace = ""
                 
                 if started then
                     local brezTimer = duration - (GetTime() - started)
@@ -925,9 +926,13 @@ function ()
                     rezCharges ="|cFF00FF00"..rezCharges.."|r" 
                 end
                 
-                TehrsCDs._raidCDs_namesText = TehrsCDs._raidCDs_namesText.."\n"..aura_env.raidCDsIndentAmount.."|cFFFFFFFFCharges|r:\n"
-                TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText.."\n"..rezCharges.."\n";
-                TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText.."\n"..timerString.."\n";
+				if TehrsCDs._rezCDs_shamans then
+					extraSpace = "\n"
+				end                
+                
+                TehrsCDs._raidCDs_namesText = TehrsCDs._raidCDs_namesText..extraSpace..aura_env.raidCDsIndentAmount.."|cFFFFFFFFCharges|r:\n"
+                TehrsCDs._raidCDs_cdText = TehrsCDs._raidCDs_cdText..extraSpace..rezCharges.."\n";
+                TehrsCDs._raidCDs_timeText = TehrsCDs._raidCDs_timeText..extraSpace..timerString.."\n";
             end        
         end          
     end

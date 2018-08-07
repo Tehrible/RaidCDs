@@ -997,8 +997,8 @@ if TehrsCDs["itIT"].Translation_Italian then
 		["allCDs"] = "Tutti i CD",  -- "All CDs"
 		["resetSuccess"] = "Resettato correttamente",  -- "Successfully reset"
 		["L1N1"] = "Impostazioni",  -- "Settings"
-		["L1N2"] = "Mostra Schermo",  -- "Toggle Display"
-		["L1N3"] = "Mostra Cursori",  -- "Toggle Sliders"
+		["L1N2"] = "Mostra",  -- "Toggle Display"
+		["L1N3"] = "Mostra Sliders",  -- "Toggle Sliders"
 		["L1N4"] = "Impostazioni Visibilità Generale",  -- "General Visibility Settings"
 		["L1N8"] = "Controlla CDs",  -- "Check CDs"
 		--["L1N9"] = "Sort CDs by Time",
