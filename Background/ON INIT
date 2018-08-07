@@ -1,8 +1,0 @@
-local parentName = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]
-if (parentName["TehrsRaidCDs"] == nil) then parentName["TehrsRaidCDs"] = {} end    
-if (parentName["TehrsRaidCDs"]["Show Settings"] == nil) then parentName["TehrsRaidCDs"]["Show Settings"] = {} end
-local TehrsCDs = parentName["TehrsRaidCDs"]       
-
-TehrsCDs.BackgroundAlpha = TehrsCDs.BackgroundAlpha or 0.5 
-
-WeakAuras.regions[parentName["controlledChildren"][6]].region.texture:SetVertexColor(0,0,0,TehrsCDs.BackgroundAlpha)
