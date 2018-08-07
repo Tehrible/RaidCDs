@@ -1197,5 +1197,5 @@ function (event, arg1, eventType, arg2, sourceGUID, sourceName, sourceFlags, sou
 			TehrsCDs["Custom Abilities"].UseCDs(event, arg1, eventType, arg2, sourceGUID, sourceName, sourceFlags, sourceFlags2, destGUID, destName, destFlags, destFlags2, spellID, spellName, spellSchool, extraSpellID, extraSpellName, extraSpellSchool)
 		end
 	end
+	return true
 end
-
