@@ -1,6 +1,0 @@
-local parentName = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]
-if (parentName["TehrsRaidCDs"] == nil) then parentName["TehrsRaidCDs"] = {} end    
-local TehrsCDs = parentName["TehrsRaidCDs"]    
-
--- This is just here so I can debug when shit hits the fan, you will never need to enable this
-TehrsCDs.DEBUG_Engine = true
