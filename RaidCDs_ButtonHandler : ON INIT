@@ -1,0 +1,1091 @@
+local TehrsCDs_show_ParentButton = true --Do you want the button? 
+
+--------------------------------------------
+----- Don't change anything below this -----
+--------------------------------------------
+
+local parentID = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]
+if (parentID["TehrsRaidCDs"] == nil) then parentID["TehrsRaidCDs"] = {} end    
+if (parentID["TehrsRaidCDs"]["Show Settings"] == nil) then parentID["TehrsRaidCDs"]["Show Settings"] = {} end
+if (parentID["TehrsRaidCDs"]["Translation Settings"] == nil) then parentID["TehrsRaidCDs"]["Translation Settings"] = {} end
+if (parentID["TehrsRaidCDs"]["Translation Settings"]["frFR"] == nil) then parentID["TehrsRaidCDs"]["Translation Settings"]["frFR"] = {} end
+if (parentID["TehrsRaidCDs"]["Translation Settings"]["zhCN"] == nil) then parentID["TehrsRaidCDs"]["Translation Settings"]["zhCN"] = {} end
+if (parentID["TehrsRaidCDs"]["Translation Settings"]["zhTW"] == nil) then parentID["TehrsRaidCDs"]["Translation Settings"]["zhTW"] = {} end
+if (parentID["TehrsRaidCDs"]["Translation Settings"]["deDE"] == nil) then parentID["TehrsRaidCDs"]["Translation Settings"]["deDE"] = {} end
+if (parentID["TehrsRaidCDs"]["Translation Settings"]["ruRU"] == nil) then parentID["TehrsRaidCDs"]["Translation Settings"]["ruRU"] = {} end
+if (parentID["TehrsRaidCDs"]["Translation Settings"]["koKR"] == nil) then parentID["TehrsRaidCDs"]["Translation Settings"]["koKR"] = {} end
+if (parentID["TehrsRaidCDs"]["Translation Settings"]["esES"] == nil) then parentID["TehrsRaidCDs"]["Translation Settings"]["esES"] = {} end
+if (parentID["TehrsRaidCDs"]["Translation Settings"]["itIT"] == nil) then parentID["TehrsRaidCDs"]["Translation Settings"]["itIT"] = {} end
+local TehrsCDs = parentID["TehrsRaidCDs"]        
+local backgroundName = parentID["controlledChildren"][6]
+local namesTextName = parentID["controlledChildren"][3]
+local filename, fontHeight, flags = WeakAuras.regions[namesTextName].region.text:GetFont()
+local backgroundAlpha = "Background Alpha"
+local textSize = "Text Size"
+local locale = GetLocale()
+local RetrieveSpellName = function(spellID)
+    local name, rank, icon, castingTime, minRange, maxRange, spellID = GetSpellInfo(spellID) or "something broke"
+    return name
+end
+local buttonText = { }
+TehrsCDs.fontSize = TehrsCDs.fontSize or 0    
+
+if ((not TehrsCDs["Show Settings"].allExterns) and (not TehrsCDs["Show Settings"].allCDs) and (not TehrsCDs["Show Settings"].allUtility) and (not TehrsCDs["Show Settings"].allImmunityCDs) and (not TehrsCDs["Show Settings"].allAoECCs) and (not TehrsCDs["Show Settings"].allInterrupts) and (not TehrsCDs["Show Settings"].allRezzes)) then
+    print("|cFF00A2E8Tehr's RaidCDs:|r If you disabled all of the sections on accident and want to re-enable them, type the following:\n   /script WeakAuras.ScanEvents(\"TehrsCDs_ShowAll\")")
+end
+
+-- Translation Handler
+if #parentID["controlledChildren"] > 8 then
+    for i = 8,#parentID["controlledChildren"] do
+        if parentID["controlledChildren"][i] then
+            WeakAuras.ActivateAuraEnvironment(parentID["controlledChildren"][i])
+            WeakAuras.ActivateAuraEnvironment()
+        end
+    end
+end
+
+if TehrsCDs["Translation Settings"]["frFR"].Translation_French then
+    buttonText = TehrsCDs["Translation Settings"]["frFR"].Translation_French_buttonText
+elseif TehrsCDs["Translation Settings"]["zhCN"].Translation_Chinese then
+    buttonText = TehrsCDs["Translation Settings"]["zhCN"].Translation_Chinese_buttonText
+elseif TehrsCDs["Translation Settings"]["zhTW"].Translation_ChineseTraditional then
+    buttonText = TehrsCDs["Translation Settings"]["zhTW"].Translation_ChineseTraditional_buttonText
+elseif TehrsCDs["Translation Settings"]["deDE"].Translation_German then
+    buttonText = TehrsCDs["Translation Settings"]["deDE"].Translation_German_buttonText
+elseif TehrsCDs["Translation Settings"]["koKR"].Translation_Korean then
+    buttonText = TehrsCDs["Translation Settings"]["koKR"].Translation_Korean_buttonText
+elseif TehrsCDs["Translation Settings"]["ruRU"].Translation_Russian then
+    buttonText = TehrsCDs["Translation Settings"]["ruRU"].Translation_Russian_buttonText    
+elseif TehrsCDs["Translation Settings"]["esES"].Translation_Spanish then
+    buttonText = TehrsCDs["Translation Settings"]["esES"].Translation_Spanish_buttonText    
+elseif TehrsCDs["Translation Settings"]["itIT"].Translation_Italian then
+    buttonText = TehrsCDs["Translation Settings"]["itIT"].Translation_Italian_buttonText        
+else
+    buttonText = {
+        ["Cancel"] = "Cancel",
+        ["print1"] = " in Raid",
+        ["printEnabled"] = "ENABLED",
+        ["printDisabled"] = "DISABLED",
+        ["allCDs"] = "All CDs",
+        ["resetSuccess"] = "Successfully reset",
+        ["L1N1"] = "Settings",
+        ["L1N2"] = "Toggle Display",
+        ["L1N3"] = "Toggle Sliders",
+        ["L1N4"] = "General Visibility Settings",
+        ["L1N8"] = "Check CDs",
+        --["L1N9"] = "Sort CDs by Time",
+        ["L1N10"] = "Show Empty Groups",
+        ["L1N11"] = "Show Only On Cooldown",
+        ["L2N1.1"] = "General Settings",
+        ["L2N2.1"] = "Show All",
+        ["L2N3.1"] = "Show External CDs",
+        ["L2N4.1"] = "Show Raid CDs",
+        ["L2N5.1"] = "Show Utility CDs",
+        ["L2N6.1"] = "Show Immunities",
+        ["L2N7.1"] = "Show Crowd Control",
+        ["L2N8.1"] = "Show Interrupts",
+        ["L2N9.1"] = "Show Battle Rezzes",    
+        ["L1N5"] = "Raid Visibility Settings",
+        ["L2N1.2"] = "Raid Settings",
+        ["L2N2.2"] = "Show All",
+        ["L2N3.2"] = "Show External CDs",
+        ["L2N4.2"] = "Show Raid CDs",
+        ["L2N5.2"] = "Show Utility CDs",
+        ["L2N6.2"] = "Show Immunities",
+        ["L2N7.2"] = "Show Crowd Control",
+        ["L2N8.2"] = "Show Interrupts",
+        ["L2N9.2"] = "Show Battle Rezzes",
+        ["L2N10.2"] = "Show Ankh",
+        ["L2N11.2"] = "Show Battle Rez Timer",
+        ["L1N6"] = "Reset Cooldowns",
+        ["L2N1.3"] = "Reset Cooldowns",
+        ["L2N2.3"] = "Reset All CDs",
+        ["L2N3.3"] = "Reset External CDs",
+        ["L2N4.3"] = "Reset Raid CDs",
+        ["L2N5.3"] = "Reset Utility CDs",
+        ["L2N6.3"] = "Reset Immunities",
+        ["L2N7.3"] = "Reset Crowd Control",
+        ["L2N8.3"] = "Reset Interrupts",
+        ["L2N9.3"] = "Reset Battle Rezzes",
+        ["L1N7"] = "Show Individual CDs",
+        ["L2N1.4"] = "Show Individual CDs",
+        ["L2N2.4"] = "Utility |cFFF58CBABoP|r",
+        ["L2N3.4"] = "External CDs",
+        ["L2N4.4"] = "Raid CDs",
+        ["L2N5.4"] = "Utility CDs",
+        ["L2N6.4"] = "Immunities",
+        ["L2N7.4"] = "Crowd Control",
+        ["L2N8.4"] = "Interrupts",
+        ["L2N9.4"] = "Battle Rezzes",
+        ["L2N10.4"] = "Ankh",
+        ["L2N11.4"] = "Battle Rez Timer"        
+    }
+end
+
+-- Buttons
+
+local alphaSlider = CreateFrame("Slider","Background Alpha",WeakAuras.regions[backgroundName].region,"OptionsSliderTemplate") --frameType, frameName, frameParent, frameTemplate   
+alphaSlider:SetPoint("TOP",0,35)
+alphaSlider.textLow = _G[backgroundAlpha.."Low"]
+alphaSlider.textHigh = _G[backgroundAlpha.."High"]
+alphaSlider.text = _G[backgroundAlpha.."Text"]
+alphaSlider:SetMinMaxValues(0, 1)
+alphaSlider.minValue, alphaSlider.maxValue = alphaSlider:GetMinMaxValues() 
+alphaSlider.textLow:SetText(alphaSlider.minValue)
+alphaSlider.textHigh:SetText(alphaSlider.maxValue)
+alphaSlider.text:SetText(backgroundAlpha)
+alphaSlider:SetValue(.5)
+alphaSlider:SetValueStep(.1)
+alphaSlider:SetScript("OnValueChanged", function(self,event,arg1) WeakAuras.regions[backgroundName].region.texture:SetVertexColor(0,0,0,event) end)
+alphaSlider:Hide()
+
+local textSlider = CreateFrame("Slider","Text Size",alphaSlider,"OptionsSliderTemplate") --frameType, frameName, frameParent, frameTemplate   
+textSlider:SetPoint("TOP",0,35)
+textSlider.textLow = _G[textSize.."Low"]
+textSlider.textHigh = _G[textSize.."High"]
+textSlider.text = _G[textSize.."Text"]
+textSlider:SetMinMaxValues(11, 24)
+textSlider.minValue, textSlider.maxValue = textSlider:GetMinMaxValues() 
+textSlider.textLow:SetText(textSlider.minValue)
+textSlider.textHigh:SetText(textSlider.maxValue)
+textSlider.text:SetText(textSize)
+textSlider:SetValue(fontHeight)
+textSlider:SetValueStep(1)
+textSlider:SetScript("OnValueChanged", function(self,event,arg1)
+        WeakAuras.regions[namesTextName].region.text:SetFont(filename,event,flags) 
+        TehrsCDs.fontSize = event
+end)
+textSlider:SetScript("OnMouseUp", function(self,event,arg1)
+        print("|cFF00A2E8Tehr's RaidCDs:|r Reload your UI to re-align!")
+        WeakAurasSaved.displays[namesTextName]["fontSize"] = TehrsCDs.fontSize
+end)
+
+aura_env.maximizeButton = aura_env.maximizeButton or CreateFrame("Button","mymaximizeButton",WeakAuras.regions[aura_env.id].region,"UIPanelButtonTemplate")
+aura_env.maximizeButton:SetPoint("CENTER",0,0)
+aura_env.maximizeButton:SetWidth(50)
+aura_env.maximizeButton:SetHeight(20)
+aura_env.maximizeButton:SetText("show")
+aura_env.maximizeButton:SetNormalFontObject("GameFontNormalSmall")
+aura_env.maximizeButton:SetDisabledFontObject(GameFontDisable)
+aura_env.maximizeButton:SetHighlightFontObject(GameFontHighlight)
+aura_env.maximizeButton:SetNormalFontObject(GameFontNormal)
+aura_env.maximizeButton:RegisterForClicks("AnyDown")
+aura_env.maximizeButton:SetScript("OnClick", function (self, button, down)
+        TehrsCDs.minmaxDisplay = not TehrsCDs.minmaxDisplay
+        print("|cFF00A2E8Tehr's RaidCDs:|r "..( TehrsCDs.minmaxDisplay and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ));
+end)
+
+if TehrsCDs_show_ParentButton then
+    aura_env.parentButton = aura_env.parentButton or CreateFrame("Button","myparentButton",WeakAuras.regions[backgroundName].region,"UIPanelButtonTemplate")
+    aura_env.parentButton:SetPoint("TOPRIGHT",0,0)
+    aura_env.parentButton:SetWidth(20)
+    aura_env.parentButton:SetHeight(20)
+    aura_env.parentButton:SetText("S")
+    aura_env.parentButton:EnableMouse(true)
+    aura_env.parentButton:SetNormalFontObject("GameFontNormalSmall")
+    aura_env.parentButton:SetDisabledFontObject(GameFontDisable)
+    aura_env.parentButton:SetHighlightFontObject(GameFontHighlight)
+    aura_env.parentButton:SetNormalFontObject(GameFontNormal)
+    aura_env.parentButton:RegisterForClicks("AnyDown")
+    aura_env.parentButton:SetScript("OnClick", function (self, button, down)
+            if button == "LeftButton" then
+                local menu = {    
+                    { text = buttonText["L1N1"], notCheckable = 1, isTitle = true}, 
+                    
+                    --Toggle Display
+                    { text = buttonText["L1N2"], notCheckable = 1,
+                        func = function()
+                            TehrsCDs.minmaxDisplay = not TehrsCDs.minmaxDisplay
+                            print("|cFF00A2E8Tehr's RaidCDs:|r "..( TehrsCDs.minmaxDisplay and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                    end },                   
+                    
+                    -- Toggle Sliders
+                    { text = buttonText["L1N3"], notCheckable = 1,
+                        func = function()
+                            if alphaSlider:IsShown() then
+                                alphaSlider:Hide()
+                            else
+                                alphaSlider:Show()
+                            end
+                    end },    
+                    
+                    { text = " ", notCheckable = 1, disabled = true},
+                    
+                    --Toggle Polling
+                    { text = buttonText["L1N8"], isNotRadio = true, keepShownOnClick = true, checked = not (TehrsCDs._raidCDs_groupPoll_state == "pause"),
+                        func = function()
+                            if TehrsCDs._raidCDs_groupPoll_state == "pause" then
+                                TehrsCDs._raidCDs_groupPoll_state = "nextPlayer"
+                            else
+                                TehrsCDs._raidCDs_groupPoll_state = "pause"
+                            end
+                            print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L1N8"].." "..(TehrsCDs._raidCDs_groupPoll_state == "pause" and "|cFFFF0000"..buttonText["printDisabled"].."|r" or "|cFF00FF00"..buttonText["printEnabled"].."|r" ))
+                    end },                        
+                    --[[
+                --Toggle Sorting by Timer
+                { text = buttonText["L1N9"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].SortByTimer,
+                    func = function()
+                        TehrsCDs["Show Settings"].SortByTimer = not TehrsCDs["Show Settings"].SortByTimer
+                        print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L1N9"].." "..(not TehrsCDs["Show Settings"].SortByTimer and "|cFFFF0000"..buttonText["printDisabled"].."|r" or "|cFF00FF00"..buttonText["printEnabled"].."|r" ))
+                    end },                    
+                        ]]
+                    
+                    --Toggle Empty Sections
+                    { text = buttonText["L1N10"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].ShowEmptySections,
+                        func = function()
+                            TehrsCDs["Show Settings"].ShowEmptySections = not TehrsCDs["Show Settings"].ShowEmptySections
+                            print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L1N10"].." "..( TehrsCDs["Show Settings"].ShowEmptySections and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                    end },          
+                    
+                    --Toggle On Cool
+                    { text = buttonText["L1N11"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].ShowOnCooldownOnly,
+                        func = function()
+                            TehrsCDs["Show Settings"].ShowOnCooldownOnly = not TehrsCDs["Show Settings"].ShowOnCooldownOnly
+                            print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L1N11"].." "..( TehrsCDs["Show Settings"].ShowOnCooldownOnly and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                    end },                    
+                    
+                    { text = " ", notCheckable = 1, disabled = true},
+                    
+                    --General Settings
+                    { text = buttonText["L1N4"], keepShownOnClick = true, hasArrow = true, notCheckable = 1,
+                        menuList = {                
+                            { text = buttonText["L2N1.1"], notCheckable = 1, isTitle = true}, 
+                            { text = buttonText["L2N2.1"], notCheckable = 1,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allExterns = true
+                                    TehrsCDs["Show Settings"].allCDs = true
+                                    TehrsCDs["Show Settings"].allUtility = true
+                                    TehrsCDs["Show Settings"].allImmunityCDs = true
+                                    TehrsCDs["Show Settings"].allAoECCs = true
+                                    TehrsCDs["Show Settings"].allInterrupts = true
+                                    TehrsCDs["Show Settings"].allRezzes = true
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r All CDs |cFF00FF00"..buttonText["printEnabled"].."|r") 
+                            end },
+                            { text = " ", notCheckable = 1, disabled = true},
+                            { text = buttonText["L2N3.1"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allExterns,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allExterns = not TehrsCDs["Show Settings"].allExterns
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N3.4"].." "..( TehrsCDs["Show Settings"].allExterns and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )) 
+                            end },
+                            { text = buttonText["L2N4.1"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allCDs,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allCDs = not TehrsCDs["Show Settings"].allCDs
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N4.4"].." "..( TehrsCDs["Show Settings"].allCDs and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )) 
+                            end },
+                            { text = buttonText["L2N5.1"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allUtility, 
+                                func = function()
+                                    TehrsCDs["Show Settings"].allUtility = not TehrsCDs["Show Settings"].allUtility
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N5.4"].." "..( TehrsCDs["Show Settings"].allUtility and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                            end },                       
+                            { text = buttonText["L2N6.1"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allImmunityCDs,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allImmunityCDs = not TehrsCDs["Show Settings"].allImmunityCDs
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N6.4"].." "..( TehrsCDs["Show Settings"].allImmunityCDs and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )) 
+                            end },      
+                            { text = buttonText["L2N7.1"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allAoECCs,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allAoECCs = not TehrsCDs["Show Settings"].allAoECCs
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N7.4"].." "..( TehrsCDs["Show Settings"].allAoECCs and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                            end },           
+                            { text = buttonText["L2N8.1"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allInterrupts,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allInterrupts = not TehrsCDs["Show Settings"].allInterrupts
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N8.4"].." "..( TehrsCDs["Show Settings"].allInterrupts and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                            end },       
+                            { text = buttonText["L2N9.1"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allRezzes,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allRezzes = not TehrsCDs["Show Settings"].allRezzes
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N9.4"].." "..( TehrsCDs["Show Settings"].allRezzes and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )) 
+                            end },    
+                            { text = buttonText["L2N11.2"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].mythicDungeonBattleRezTimer,
+                                func = function()
+                                    TehrsCDs["Show Settings"].mythicDungeonBattleRezTimer = not TehrsCDs["Show Settings"].mythicDungeonBattleRezTimer
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N9.4"].." "..( TehrsCDs["Show Settings"].mythicDungeonBattleRezTimer and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )) 
+                            end },                              
+                            { text = " ", notCheckable = 1, disabled = true},    
+                            { text = buttonText["Cancel"], notCheckable = 1},
+                        } 
+                    }, 
+                    
+                    --Raid Settings
+                    { text = buttonText["L1N5"], keepShownOnClick = true, hasArrow = true, notCheckable = 1, 
+                        menuList = {    
+                            { text = buttonText["L2N1.2"], notCheckable = 1, isTitle = true},    
+                            { text = buttonText["L2N2.2"], notCheckable = 1,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allExterns_inRaid = true
+                                    TehrsCDs["Show Settings"].allCDs_inRaid = true
+                                    TehrsCDs["Show Settings"].allUtility_inRaid = true
+                                    TehrsCDs["Show Settings"].allImmunityCDs_inRaid = true
+                                    TehrsCDs["Show Settings"].allAoECCs_inRaid = true
+                                    TehrsCDs["Show Settings"].allInterrupts_inRaid = true
+                                    TehrsCDs["Show Settings"].allRezzes_inRaid = true
+                                    TehrsCDs["Show Settings"].raidBattleRezTimer = true
+                                    TehrsCDs["Show Settings"].Ankh_inRaid = true
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["allCDs"].." |cFF00FF00"..buttonText["printEnabled"].."|r "..buttonText["print1"]) 
+                            end },
+                            { text = " ", notCheckable = 1, disabled = true},
+                            { text = buttonText["L2N3.2"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allExterns_inRaid,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allExterns_inRaid = not TehrsCDs["Show Settings"].allExterns_inRaid
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N3.4"].." "..( TehrsCDs["Show Settings"].allExterns_inRaid and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )..buttonText["print1"]) 
+                            end },
+                            { text = buttonText["L2N4.2"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allCDs_inRaid,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allCDs_inRaid = not TehrsCDs["Show Settings"].allCDs_inRaid
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N4.4"].." "..( TehrsCDs["Show Settings"].allCDs_inRaid and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )..buttonText["print1"]) 
+                            end },
+                            { text = buttonText["L2N5.2"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allUtility_inRaid,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allUtility_inRaid = not TehrsCDs["Show Settings"].allUtility_inRaid
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N5.4"].." "..( TehrsCDs["Show Settings"].allUtility_inRaid and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )..buttonText["print1"]) 
+                            end },                       
+                            { text = buttonText["L2N6.2"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allImmunityCDs_inRaid,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allImmunityCDs_inRaid = not TehrsCDs["Show Settings"].allImmunityCDs_inRaid
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N6.4"].." "..( TehrsCDs["Show Settings"].allImmunityCDs_inRaid and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )..buttonText["print1"]) 
+                            end },        
+                            { text = buttonText["L2N7.2"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allAoECCs_inRaid,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allAoECCs_inRaid = not TehrsCDs["Show Settings"].allAoECCs_inRaid
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N7.4"].." "..( TehrsCDs["Show Settings"].allAoECCs_inRaid and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )..buttonText["print1"])
+                            end },           
+                            { text = buttonText["L2N8.2"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allInterrupts_inRaid,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allInterrupts_inRaid = not TehrsCDs["Show Settings"].allInterrupts_inRaid
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N8.4"].." "..( TehrsCDs["Show Settings"].allInterrupts_inRaid and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )..buttonText["print1"])
+                            end },        
+                            { text = buttonText["L2N9.2"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].allRezzes_inRaid,
+                                func = function()
+                                    TehrsCDs["Show Settings"].allRezzes_inRaid = not TehrsCDs["Show Settings"].allRezzes_inRaid
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N9.4"].." "..( TehrsCDs["Show Settings"].allRezzes_inRaid and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )..buttonText["print1"])  
+                            end },            
+                            { text = buttonText["L2N10.2"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Ankh_inRaid,
+                                func = function()
+                                    TehrsCDs["Show Settings"].Ankh_inRaid = not TehrsCDs["Show Settings"].Ankh_inRaid
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N10.4"].." "..( TehrsCDs["Show Settings"].Ankh_inRaid and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )..buttonText["print1"])  
+                            end },               
+                            { text = buttonText["L2N11.2"], isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].raidBattleRezTimer,
+                                func = function()
+                                    TehrsCDs["Show Settings"].raidBattleRezTimer = not TehrsCDs["Show Settings"].raidBattleRezTimer
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["L2N11.4"].." "..( TehrsCDs["Show Settings"].raidBattleRezTimer and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" )..buttonText["print1"])
+                            end },
+                            { text = " ", notCheckable = 1, disabled = true},    
+                            { text = buttonText["Cancel"], notCheckable = 1},
+                        } 
+                    },    
+                    
+                    --Reset Cooldowns
+                    { text = buttonText["L1N6"], keepShownOnClick = true, hasArrow = true, notCheckable = 1,    
+                        menuList = {    
+                            { text = buttonText["L2N1.3"], notCheckable = 1, isTitle = true},   
+                            { text = buttonText["L2N2.3"], notCheckable = 1,
+                                func = function()
+                                    TehrsCDs._externCDs_druids = nil
+                                    TehrsCDs._externCDs_monks = nil
+                                    TehrsCDs._externCDs_paladins = nil
+                                    TehrsCDs._externCDs_priests = nil
+                                    TehrsCDs._externCDs_warriors = nil
+                                    TehrsCDs._externCDs_dhs = nil
+                                    TehrsCDs._raidCDs_druids = nil
+                                    TehrsCDs._raidCDs_monks = nil
+                                    TehrsCDs._raidCDs_paladins = nil
+                                    TehrsCDs._raidCDs_priests = nil
+                                    TehrsCDs._raidCDs_shamans = nil
+                                    TehrsCDs._raidCDs_warriors = nil
+                                    TehrsCDs._raidCDs_dhs = nil
+                                    TehrsCDs._utilityCDs_dks = nil
+                                    TehrsCDs._utilityCDs_dhs = nil     
+                                    TehrsCDs._utilityCDs_shamans = nil
+                                    TehrsCDs._utilityCDs_druids = nil
+                                    TehrsCDs._utilityCDs_priests = nil
+                                    TehrsCDs._utilityCDs_paladins = nil
+                                    TehrsCDs._utilityCDs_hunters = nil
+                                    TehrsCDs._utilityCDs_rogues = nil        
+                                    TehrsCDs._interrupts_priests = nil
+                                    TehrsCDs._interrupts_mages = nil
+                                    TehrsCDs._interrupts_hunters = nil
+                                    TehrsCDs._interrupts_shamans = nil
+                                    TehrsCDs._interrupts_monks = nil
+                                    TehrsCDs._interrupts_paladins = nil
+                                    TehrsCDs._interrupts_dks = nil
+                                    TehrsCDs._interrupts_dhs = nil   
+                                    TehrsCDs._interrupts_rogues = nil
+                                    TehrsCDs._interrupts_warriors = nil
+                                    TehrsCDs._interrupts_druids = nil
+                                    TehrsCDs._interrupts_warlocks = nil
+                                    TehrsCDs._interrupts_belfs = nil 
+                                    TehrsCDs._immunityCDs_mages = nil
+                                    TehrsCDs._immunityCDs_hunters = nil
+                                    TehrsCDs._immunityCDs_paladins = nil
+                                    TehrsCDs._immunityCDs_dhs = nil   
+                                    TehrsCDs._immunityCDs_rogues = nil         
+                                    TehrsCDs._aoeCCs_druids = nil
+                                    TehrsCDs._aoeCCs_priests = nil    
+                                    TehrsCDs._aoeCCs_hunters = nil
+                                    TehrsCDs._aoeCCs_mages = nil
+                                    TehrsCDs._aoeCCs_monks = nil   
+                                    TehrsCDs._aoeCCs_shamans = nil    
+                                    TehrsCDs._aoeCCs_warriors = nil
+                                    TehrsCDs._aoeCCs_dhs = nil
+                                    TehrsCDs._aoeCCs_warlocks = nil   
+                                    TehrsCDs._aoeCCs_dks = nil   
+                                    TehrsCDs._aoeCCs_tauren = nil    
+                                    TehrsCDs._aoeCCs_hmtauren = nil
+                                    TehrsCDs._rezCDs_dks = nil
+                                    TehrsCDs._rezCDs_druids = nil
+                                    TehrsCDs._rezCDs_warlocks = nil
+                                    TehrsCDs._rezCDs_shamans = nil
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["resetSuccess"].." "..buttonText["allCDs"])
+                            end },
+                            { text = " ", notCheckable = 1, disabled = true},
+                            { text = buttonText["L2N3.3"], notCheckable = 1,
+                                func = function()
+                                    TehrsCDs._externCDs_druids = nil
+                                    TehrsCDs._externCDs_monks = nil
+                                    TehrsCDs._externCDs_paladins = nil
+                                    TehrsCDs._externCDs_priests = nil
+                                    TehrsCDs._externCDs_warriors = nil
+                                    TehrsCDs._externCDs_dhs = nil
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["resetSuccess"].." "..buttonText["L2N3.4"])
+                            end },
+                            { text = buttonText["L2N4.3"], notCheckable = 1,
+                                func = function()
+                                    TehrsCDs._raidCDs_druids = nil
+                                    TehrsCDs._raidCDs_monks = nil
+                                    TehrsCDs._raidCDs_paladins = nil
+                                    TehrsCDs._raidCDs_priests = nil
+                                    TehrsCDs._raidCDs_shamans = nil
+                                    TehrsCDs._raidCDs_warriors = nil
+                                    TehrsCDs._raidCDs_dhs = nil
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["resetSuccess"].." "..buttonText["L2N4.4"])  
+                            end },
+                            { text = buttonText["L2N5.3"], notCheckable = 1,
+                                func = function()
+                                    TehrsCDs._utilityCDs_dks = nil
+                                    TehrsCDs._utilityCDs_dhs = nil     
+                                    TehrsCDs._utilityCDs_shamans = nil
+                                    TehrsCDs._utilityCDs_druids = nil
+                                    TehrsCDs._utilityCDs_priests = nil
+                                    TehrsCDs._utilityCDs_paladins = nil
+                                    TehrsCDs._utilityCDs_hunters = nil
+                                    TehrsCDs._utilityCDs_rogues = nil        
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["resetSuccess"].." "..buttonText["L2N5.4"]) 
+                            end },
+                            { text = buttonText["L2N6.3"], notCheckable = 1,
+                                func = function()
+                                    TehrsCDs._immunityCDs_mages = nil
+                                    TehrsCDs._immunityCDs_hunters = nil
+                                    TehrsCDs._immunityCDs_paladins = nil
+                                    TehrsCDs._immunityCDs_dhs = nil   
+                                    TehrsCDs._immunityCDs_rogues = nil         
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["resetSuccess"].." "..buttonText["L2N6.4"])  
+                            end },
+                            { text = buttonText["L2N7.3"], notCheckable = 1,
+                                func = function()
+                                    TehrsCDs._aoeCCs_druids = nil
+                                    TehrsCDs._aoeCCs_priests = nil    
+                                    TehrsCDs._aoeCCs_hunters = nil
+                                    TehrsCDs._aoeCCs_mages = nil
+                                    TehrsCDs._aoeCCs_monks = nil   
+                                    TehrsCDs._aoeCCs_shamans = nil    
+                                    TehrsCDs._aoeCCs_warriors = nil
+                                    TehrsCDs._aoeCCs_dhs = nil
+                                    TehrsCDs._aoeCCs_warlocks = nil   
+                                    TehrsCDs._aoeCCs_dks = nil   
+                                    TehrsCDs._aoeCCs_tauren = nil    
+                                    TehrsCDs._aoeCCs_hmtauren = nil  
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["resetSuccess"].." "..buttonText["L2N7.4"]) 
+                            end },
+                            { text = buttonText["L2N8.3"], notCheckable = 1,
+                                func = function()
+                                    TehrsCDs._interrupts_priests = nil
+                                    TehrsCDs._interrupts_mages = nil
+                                    TehrsCDs._interrupts_hunters = nil
+                                    TehrsCDs._interrupts_shamans = nil
+                                    TehrsCDs._interrupts_monks = nil
+                                    TehrsCDs._interrupts_paladins = nil
+                                    TehrsCDs._interrupts_dks = nil
+                                    TehrsCDs._interrupts_dhs = nil   
+                                    TehrsCDs._interrupts_rogues = nil
+                                    TehrsCDs._interrupts_warriors = nil
+                                    TehrsCDs._interrupts_druids = nil
+                                    TehrsCDs._interrupts_warlocks = nil
+                                    TehrsCDs._interrupts_belfs = nil            
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["resetSuccess"].." "..buttonText["L2N8.4"])  
+                            end },
+                            { text = buttonText["L2N9.3"], notCheckable = 1,
+                                func = function()
+                                    TehrsCDs._rezCDs_dks = nil
+                                    TehrsCDs._rezCDs_druids = nil
+                                    TehrsCDs._rezCDs_warlocks = nil
+                                    TehrsCDs._rezCDs_shamans = nil
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r "..buttonText["resetSuccess"].." "..buttonText["L2N9.4"]) 
+                            end },                
+                            { text = " ", notCheckable = 1, disabled = true},    
+                            { text = buttonText["Cancel"], notCheckable = 1}
+                        } 
+                    },    
+                    
+                    --Individual CDs
+                    { text = buttonText["L1N7"], keepShownOnClick = true, hasArrow = true, notCheckable = 1,
+                        menuList = {    
+                            { text = buttonText["L2N1.4"], notCheckable = 1, isTitle = true},   
+                            { text = buttonText["L2N2.4"], isNotRadio = true, keepShownOnClick = false, checked = TehrsCDs["Show Settings"].BoPUtility,
+                                func = function()
+                                    TehrsCDs["Show Settings"].BoPUtility = not TehrsCDs["Show Settings"].BoPUtility
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r |cFFF58CBA"..RetrieveSpellName(1022).."|r: "..( TehrsCDs["Show Settings"].BoPUtility and "|cFF00A2E8"..buttonText["L2N5.4"].."|r" or "|cFF00A2E8"..buttonText["L2N3.4"].."|r" ))
+                                    print("|cFF00A2E8Tehr's RaidCDs:|r Remember to reload your UI for changes to take effect!")
+                                end
+                            },         
+                            { text = " ", notCheckable = 1, disabled = true},
+                            { text = buttonText["L2N3.4"], keepShownOnClick = true, hasArrow = true, notCheckable = 1, 
+                                menuList = {
+                                    { text = "|cFFC79C6E"..RetrieveSpellName(223657).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Safeguard,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Safeguard = not TehrsCDs["Show Settings"].Safeguard
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFC79C6E"..RetrieveSpellName(223657).."|r "..( TehrsCDs["Show Settings"].Safeguard and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },       
+                                    { text = "|cFFFFFFFF"..RetrieveSpellName(47788).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].GSpirit,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].GSpirit = not TehrsCDs["Show Settings"].GSpirit
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFFFFF"..RetrieveSpellName(47788).."|r "..( TehrsCDs["Show Settings"].GSpirit and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },   
+                                    { text = "|cFFFFFFFF"..RetrieveSpellName(33206).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].PSup,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].PSup = not TehrsCDs["Show Settings"].PSup
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFFFFF"..RetrieveSpellName(33206).."|r "..( TehrsCDs["Show Settings"].PSup and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },  
+                                    { text = "|cFFFF7D0A"..RetrieveSpellName(102342).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].IBark,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].IBark = not TehrsCDs["Show Settings"].IBark
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFF7D0A"..RetrieveSpellName(102342).."|r "..( TehrsCDs["Show Settings"].IBark and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },      
+                                    { text = "|cFFF58CBA"..RetrieveSpellName(204018).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Spellward,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Spellward = not TehrsCDs["Show Settings"].Spellward
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFF58CBA"..RetrieveSpellName(204018).."|r "..( TehrsCDs["Show Settings"].Spellward and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },     
+                                    { text = "|cFFF58CBA"..RetrieveSpellName(6940).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Sac,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Sac = not TehrsCDs["Show Settings"].Sac
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFF58CBA"..RetrieveSpellName(6940).."|r "..( TehrsCDs["Show Settings"].Sac and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFFF58CBA"..RetrieveSpellName(633).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].LoH,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].LoH = not TehrsCDs["Show Settings"].LoH
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFF58CBA"..RetrieveSpellName(633).."|r "..( TehrsCDs["Show Settings"].LoH and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                 
+                                    { text = "|cFFF58CBA"..RetrieveSpellName(1022).."|r", notClickable = TehrsCDs["Show Settings"].BoPUtility, isNotRadio = true, checked = (TehrsCDs["Show Settings"].BoP and not TehrsCDs["Show Settings"].BoPUtility), 
+                                        func = function()                    
+                                            TehrsCDs["Show Settings"].BoP = not TehrsCDs["Show Settings"].BoP
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFF58CBA"..RetrieveSpellName(1022).."|r "..( TehrsCDs["Show Settings"].BoP and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },      
+                                    { text = "|cFF00FF96"..RetrieveSpellName(116849).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].LCocoon,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].LCocoon = not TehrsCDs["Show Settings"].LCocoon
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF00FF96"..RetrieveSpellName(116849).."|r "..( TehrsCDs["Show Settings"].LCocoon and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                         
+                                    { text = " ", notCheckable = 1, disabled = true},    
+                                    { text = "|cFFFFFFFF"..buttonText["Cancel"], notCheckable = 1}
+                                } 
+                            },        
+                            { text = buttonText["L2N4.4"], keepShownOnClick = true, hasArrow = true, notCheckable = 1,
+                                menuList = { 
+                                    { text = "|cFFC79C6E"..RetrieveSpellName(97462).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].CShout, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].CShout = not TehrsCDs["Show Settings"].CShout
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFC79C6E"..RetrieveSpellName(97462).."|r "..( TehrsCDs["Show Settings"].CShout and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },               
+                                    { text = "|cFFFFFFFF"..RetrieveSpellName(64843).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].DHymn,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].DHymn = not TehrsCDs["Show Settings"].DHymn
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFFFFF"..RetrieveSpellName(64843).."|r "..( TehrsCDs["Show Settings"].DHymn and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFFFFFFFF"..RetrieveSpellName(200183).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Apotheosis,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Apotheosis = not TehrsCDs["Show Settings"].Apotheosis
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFFFFF"..RetrieveSpellName(200183).."|r "..( TehrsCDs["Show Settings"].Apotheosis and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFFFFFFFF"..RetrieveSpellName(265202).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Salvation,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Salvation = not TehrsCDs["Show Settings"].Salvation
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFFFFF"..RetrieveSpellName(265202).."|r "..( TehrsCDs["Show Settings"].Salvation and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                    
+                                    { text = "|cFFFFFFFF"..RetrieveSpellName(15286).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].VE, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].VE = not TehrsCDs["Show Settings"].VE
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFFFFF "..RetrieveSpellName(15286).."|r "..( TehrsCDs["Show Settings"].VE and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },   
+                                    { text = "|cFFFFFFFF"..RetrieveSpellName(62618).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Barrier, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Barrier = not TehrsCDs["Show Settings"].Barrier
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFFFFF"..RetrieveSpellName(62618).."|r "..( TehrsCDs["Show Settings"].Barrier and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFFFFFFFF"..RetrieveSpellName(47536).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Rapture, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Rapture = not TehrsCDs["Show Settings"].Rapture
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFFFFF"..RetrieveSpellName(47536).."|r "..( TehrsCDs["Show Settings"].Rapture and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                 
+                                    { text = "|cFFA330C9"..RetrieveSpellName(196718).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Darkness,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Darkness = not TehrsCDs["Show Settings"].Darkness
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFA330C9"..RetrieveSpellName(196718).."|r "..( TehrsCDs["Show Settings"].Darkness and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFFFF7D0A"..RetrieveSpellName(740).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Tranq,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Tranq = not TehrsCDs["Show Settings"].Tranq
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFF7D0A"..RetrieveSpellName(740).."|r "..( TehrsCDs["Show Settings"].Tranq and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },  
+                                    { text = "|cFFFF7D0A"..RetrieveSpellName(197721).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Flourish,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Flourish = not TehrsCDs["Show Settings"].Flourish
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFF7D0A"..RetrieveSpellName(197721).."|r "..( TehrsCDs["Show Settings"].Flourish and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                  
+                                    { text = "|cFFF58CBA"..RetrieveSpellName(31821).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].AuraM,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].AuraM = not TehrsCDs["Show Settings"].AuraM
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFF58CBA"..RetrieveSpellName(31821).."|r "..( TehrsCDs["Show Settings"].AuraM and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },        
+                                    { text = "|cFFF58CBA"..RetrieveSpellName(204150).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Aegis, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Aegis = not TehrsCDs["Show Settings"].Aegis
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFF58CBA"..RetrieveSpellName(204150).."|r "..( TehrsCDs["Show Settings"].Aegis and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },       
+                                    { text = "|cFFF58CBA"..RetrieveSpellName(31884).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Wings, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Wings = not TehrsCDs["Show Settings"].Wings
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFF58CBA"..RetrieveSpellName(31884).."|r "..( TehrsCDs["Show Settings"].Wings and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                    
+                                    { text = "|cFF0070DE"..RetrieveSpellName(207399).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].AProt, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].AProt = not TehrsCDs["Show Settings"].AProt
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF0070DE"..RetrieveSpellName(207399).."|r "..( TehrsCDs["Show Settings"].AProt and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },     
+                                    { text = "|cFF0070DE"..RetrieveSpellName(108281).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].AG,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].AG = not TehrsCDs["Show Settings"].AG
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF0070DE"..RetrieveSpellName(108281).."|r "..( TehrsCDs["Show Settings"].AG and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },   
+                                    { text = "|cFF0070DE"..RetrieveSpellName(108280).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].HTide,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].HTide = not TehrsCDs["Show Settings"].HTide
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF0070DE"..RetrieveSpellName(108280).."|r "..( TehrsCDs["Show Settings"].HTide and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },     
+                                    { text = "|cFF0070DE"..RetrieveSpellName(114052).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Ascendance,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Ascendance = not TehrsCDs["Show Settings"].Ascendance
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF0070DE"..RetrieveSpellName(114052).."|r "..( TehrsCDs["Show Settings"].Ascendance and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                    
+                                    { text = "|cFF0070DE"..RetrieveSpellName(98008).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].SLT,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].SLT = not TehrsCDs["Show Settings"].SLT
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF0070DE"..RetrieveSpellName(98008).."|r "..( TehrsCDs["Show Settings"].SLT and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },     
+                                    { text = "|cFF00FF96"..RetrieveSpellName(115310).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Revival, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Revival = not TehrsCDs["Show Settings"].Revival
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF00FF96"..RetrieveSpellName(115310).."|r "..( TehrsCDs["Show Settings"].Revival and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },        
+                                    { text = " ", notCheckable = 1, disabled = true},    
+                                    { text = "|cFFFFFFFF"..buttonText["Cancel"], notCheckable = 1}
+                                }
+                            },    
+                            { text = buttonText["L2N5.4"], keepShownOnClick = true, hasArrow = true, notCheckable = 1,
+                                menuList = { 
+                                    { text = "|cFFB4B4B4"..RetrieveSpellName(58984).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Shadowmeld, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Shadowmeld = not TehrsCDs["Show Settings"].Shadowmeld
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFB4B4B4"..RetrieveSpellName(58984).."|r "..( TehrsCDs["Show Settings"].Shadowmeld and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                              
+                                    { text = "|cFFFFFFFF"..RetrieveSpellName(64901).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Hope, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Hope = not TehrsCDs["Show Settings"].Hope
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFFFFF"..RetrieveSpellName(64901).."|r "..( TehrsCDs["Show Settings"].Hope and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },        
+                                    { text = "|cFFFFFFFF"..RetrieveSpellName(73325).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Grip, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Grip = not TehrsCDs["Show Settings"].Grip
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFFFFF"..RetrieveSpellName(73325).."|r "..( TehrsCDs["Show Settings"].Grip and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFFFF7D0A"..RetrieveSpellName(29166).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Innervate, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Innervate = not TehrsCDs["Show Settings"].Innervate
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFF7D0A"..RetrieveSpellName(29166).."|r "..( TehrsCDs["Show Settings"].Innervate and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                     
+                                    { text = "|cFFFF7D0A"..RetrieveSpellName(205636).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Treants, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Treants = not TehrsCDs["Show Settings"].Treants
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFF7D0A"..RetrieveSpellName(205636).."|r "..( TehrsCDs["Show Settings"].Treants and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                    
+                                    { text = "|cFFFF7D0A"..RetrieveSpellName(106898).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Roar, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Roar = not TehrsCDs["Show Settings"].Roar
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFF7D0A"..RetrieveSpellName(106898).."|r "..( TehrsCDs["Show Settings"].Roar and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFFF58CBA"..RetrieveSpellName(1022).."|r", notClickable = not TehrsCDs["Show Settings"].BoPUtility, isNotRadio = true, checked = (TehrsCDs["Show Settings"].BoP and TehrsCDs["Show Settings"].BoPUtility), 
+                                        func = function()                
+                                            TehrsCDs["Show Settings"].BoP = not TehrsCDs["Show Settings"].BoP
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFF58CBA"..RetrieveSpellName(1022).."|r "..( TehrsCDs["Show Settings"].BoP and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },     
+                                    { text = "|cFF0070DE"..RetrieveSpellName(192077).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].WindRush,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].WindRush = not TehrsCDs["Show Settings"].WindRush
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF0070DE"..RetrieveSpellName(192077).."|r "..( TehrsCDs["Show Settings"].WindRush and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFFABD473"..RetrieveSpellName(34477).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Misdirect, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Misdirect = not TehrsCDs["Show Settings"].Misdirect
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFABD473"..RetrieveSpellName(34477).."|r "..( TehrsCDs["Show Settings"].Misdirect and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },        
+                                    { text = "|cFFFFF569"..RetrieveSpellName(57934).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Tricks, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Tricks = not TehrsCDs["Show Settings"].Tricks
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFF569"..RetrieveSpellName(57934).."|r "..( TehrsCDs["Show Settings"].Tricks and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },        
+                                    { text = "|cFFFFF569"..RetrieveSpellName(114018).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Shroud, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Shroud = not TehrsCDs["Show Settings"].Shroud
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFF569"..RetrieveSpellName(114018).."|r "..( TehrsCDs["Show Settings"].Shroud and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                     
+                                    { text = " ", notCheckable = 1, disabled = true},    
+                                    { text = "|cFFFFFFFF"..buttonText["Cancel"], notCheckable = 1}
+                                }
+                            },    
+                            { text = buttonText["L2N6.4"], keepShownOnClick = true, hasArrow = true, notCheckable = 1,
+                                menuList = { 
+                                    { text = "|cFFA330C9"..RetrieveSpellName(196555).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Netherwalk, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Netherwalk = not TehrsCDs["Show Settings"].Netherwalk
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFA330C9"..RetrieveSpellName(196555).."|r "..( TehrsCDs["Show Settings"].Netherwalk and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },         
+                                    { text = "|cFFF58CBA"..RetrieveSpellName(642).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Bubble, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Bubble = not TehrsCDs["Show Settings"].Bubble
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFF58CBA"..RetrieveSpellName(642).."|r "..( TehrsCDs["Show Settings"].Bubble and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },     
+                                    { text = "|cFFABD473"..RetrieveSpellName(186265).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Turtle, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Turtle = not TehrsCDs["Show Settings"].Turtle
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFABD473"..RetrieveSpellName(186265).."|r "..( TehrsCDs["Show Settings"].Turtle and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },     
+                                    { text = "|cFFFFF569"..RetrieveSpellName(31224).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Cloak, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Cloak = not TehrsCDs["Show Settings"].Cloak
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFF569"..RetrieveSpellName(31224).."|r "..( TehrsCDs["Show Settings"].Cloak and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFF69CCF0"..RetrieveSpellName(45438).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Block, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Block = not TehrsCDs["Show Settings"].Block
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF69CCF0"..RetrieveSpellName(45438).."|r "..( TehrsCDs["Show Settings"].Block and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },  
+                                    { text = " ", notCheckable = 1, disabled = true},    
+                                    { text = "|cFFFFFFFF"..buttonText["Cancel"], notCheckable = 1}
+                                }
+                            },    
+                            { text = buttonText["L2N7.4"], keepShownOnClick = true, hasArrow = true, notCheckable = 1,
+                                menuList = { 
+                                    { text = "|cFFB4B4B4"..RetrieveSpellName(20549).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Stomp, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Stomp = not TehrsCDs["Show Settings"].Stomp
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFB4B4B4"..RetrieveSpellName(20549).."|r "..( TehrsCDs["Show Settings"].Stomp and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFFB4B4B4"..RetrieveSpellName(255654).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].BullRush, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].BullRush = not TehrsCDs["Show Settings"].BullRush
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFB4B4B4"..RetrieveSpellName(255654).."|r "..( TehrsCDs["Show Settings"].BullRush and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },  
+                                    { text = "|cFFFF7D0A"..RetrieveSpellName(102793).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Ursol,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Ursol = not TehrsCDs["Show Settings"].Ursol
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFF7D0A"..RetrieveSpellName(102793).."|r "..( TehrsCDs["Show Settings"].Ursol and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    }, 
+                                    { text = "|cFFFF7D0A"..RetrieveSpellName(61391).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Typhoon, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Typhoon = not TehrsCDs["Show Settings"].Typhoon
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFF7D0A"..RetrieveSpellName(61391).."|r "..( TehrsCDs["Show Settings"].Typhoon and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFFFFFFFF"..RetrieveSpellName(205369).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].MindBomb,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].MindBomb = not TehrsCDs["Show Settings"].MindBomb
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFFFFF"..RetrieveSpellName(205369).."|r "..( TehrsCDs["Show Settings"].MindBomb and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFFFFFFFF"..RetrieveSpellName(204263).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Shining,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Shining = not TehrsCDs["Show Settings"].Shining
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFFFFF"..RetrieveSpellName(204263).."|r "..( TehrsCDs["Show Settings"].Shining and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                  
+                                    { text = "|cFFC79C6E"..RetrieveSpellName(46968).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Shockwave,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Shockwave = not TehrsCDs["Show Settings"].Shockwave
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFC79C6E"..RetrieveSpellName(46968).."|r "..( TehrsCDs["Show Settings"].Shockwave and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFFA330C9"..RetrieveSpellName(202138).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Chains, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Chains = not TehrsCDs["Show Settings"].Chains
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFA330C9"..RetrieveSpellName(202138).."|r "..( TehrsCDs["Show Settings"].Chains and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFFC41F3B"..RetrieveSpellName(108199).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Grasp,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Grasp = not TehrsCDs["Show Settings"].Grasp
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFC41F3B"..RetrieveSpellName(108199).."|r "..( TehrsCDs["Show Settings"].Grasp and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },         
+                                    { text = "|cFF0070DE"..RetrieveSpellName(192058).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].CapTotem, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].CapTotem = not TehrsCDs["Show Settings"].CapTotem
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF0070DE"..RetrieveSpellName(192058).."|r "..( TehrsCDs["Show Settings"].CapTotem and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },      
+                                    { text = "|cFF0070DE"..RetrieveSpellName(51490).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Thunderstorm, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Thunderstorm = not TehrsCDs["Show Settings"].Thunderstorm
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF0070DE"..RetrieveSpellName(51490).."|r "..( TehrsCDs["Show Settings"].Thunderstorm and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                  
+                                    { text = "|cFFABD473"..RetrieveSpellName(109248).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Binding,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Binding = not TehrsCDs["Show Settings"].Binding
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFABD473"..RetrieveSpellName(109248).."|r "..( TehrsCDs["Show Settings"].Binding and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFF9482C9"..RetrieveSpellName(1122).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Infernal, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Infernal = not TehrsCDs["Show Settings"].Infernal
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF9482C9"..RetrieveSpellName(1122).."|r "..( TehrsCDs["Show Settings"].Infernal and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },    
+                                    { text = "|cFF9482C9"..RetrieveSpellName(30283).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Shadowfury, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Shadowfury = not TehrsCDs["Show Settings"].Shadowfury
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF9482C9"..RetrieveSpellName(30283).."|r "..( TehrsCDs["Show Settings"].Shadowfury and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },     
+                                    { text = "|cFF00FF96"..RetrieveSpellName(119381).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Sweep, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Sweep = not TehrsCDs["Show Settings"].Sweep
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF00FF96"..RetrieveSpellName(119381).."|r "..( TehrsCDs["Show Settings"].Sweep and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },     
+                                    { text = "|cFF00FF96"..RetrieveSpellName(116844).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Ring, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Ring = not TehrsCDs["Show Settings"].Ring
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF00FF96"..RetrieveSpellName(116844).."|r "..( TehrsCDs["Show Settings"].Ring and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                       
+                                    { text = "|cFFA330C9"..RetrieveSpellName(179057).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Nova, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Nova = not TehrsCDs["Show Settings"].Nova
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFA330C9"..RetrieveSpellName(179057).."|r "..( TehrsCDs["Show Settings"].Nova and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                            
+                                    { text = " ", notCheckable = 1, disabled = true},    
+                                    { text = "|cFFFFFFFF"..buttonText["Cancel"], notCheckable = 1}
+                                }
+                            },    
+                            { text = buttonText["L2N8.4"], keepShownOnClick = true, hasArrow = true, notCheckable = 1,
+                                menuList = { 
+                                    --[[{ text = "|cFFB4B4B4"..RetrieveSpellName(28730).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Torrent, 
+                                    func = function()
+                                        TehrsCDs["Show Settings"].Torrent = not TehrsCDs["Show Settings"].Torrent
+                                        print("|cFF00A2E8Tehr's RaidCDs:|r |cFFB4B4B4"..RetrieveSpellName(28730).."|r "..( TehrsCDs["Show Settings"].Torrent and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                    end
+                                },               
+                                Arcane Torrent isn't an interrupt anymore! Holding onto this until I add dispels.
+                                ]]
+                                    { text = "|cFFC79C6E"..RetrieveSpellName(6552).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Pummel,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Pummel = not TehrsCDs["Show Settings"].Pummel
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFC79C6E"..RetrieveSpellName(6552).."|r "..( TehrsCDs["Show Settings"].Pummel and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },        
+                                    { text = "|cFFFFFFFF"..RetrieveSpellName(15487).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Silence, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Silence = not TehrsCDs["Show Settings"].Silence
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFFFFF"..RetrieveSpellName(15487).."|r "..( TehrsCDs["Show Settings"].Silence and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },          
+                                    { text = "|cFFA330C9"..RetrieveSpellName(183752).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Disrupt, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Disrupt = not TehrsCDs["Show Settings"].Disrupt
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFA330C9"..RetrieveSpellName(183752).."|r "..( TehrsCDs["Show Settings"].Disrupt and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },       
+                                    { text = "|cFFA330C9"..RetrieveSpellName(202137).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].SigilSilence, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].SigilSilence = not TehrsCDs["Show Settings"].SigilSilence
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFA330C9"..RetrieveSpellName(202137).."|r "..( TehrsCDs["Show Settings"].SigilSilence and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                   
+                                    { text = "|cFFFF7D0A"..RetrieveSpellName(106839).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].SBash,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].SBash = not TehrsCDs["Show Settings"].SBash
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFF7D0A"..RetrieveSpellName(106839).."|r "..( TehrsCDs["Show Settings"].SBash and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },            
+                                    { text = "|cFFFF7D0A"..RetrieveSpellName(78675).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].SBeam, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].SBeam = not TehrsCDs["Show Settings"].SBeam
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFF7D0A"..RetrieveSpellName(78675).."|r "..( TehrsCDs["Show Settings"].SBeam and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },           
+                                    { text = "|cFFC41F3B"..RetrieveSpellName(47528).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].MindFreeze,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].MindFreeze = not TehrsCDs["Show Settings"].MindFreeze
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFC41F3B"..RetrieveSpellName(47528).."|r "..( TehrsCDs["Show Settings"].MindFreeze and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },               
+                                    { text = "|cFFF58CBA"..RetrieveSpellName(96231).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Rebuke,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Rebuke = not TehrsCDs["Show Settings"].Rebuke
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFF58CBA"..RetrieveSpellName(96231).."|r "..( TehrsCDs["Show Settings"].Rebuke and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },               
+                                    { text = "|cFF0070DE"..RetrieveSpellName(57994).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].WShear, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].WShear = not TehrsCDs["Show Settings"].WShear
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF0070DE"..RetrieveSpellName(57994).."|r "..( TehrsCDs["Show Settings"].WShear and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },           
+                                    { text = "|cFFABD473"..RetrieveSpellName(187707).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Muzzle, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Muzzle = not TehrsCDs["Show Settings"].Muzzle
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFABD473"..RetrieveSpellName(187707).."|r "..( TehrsCDs["Show Settings"].Muzzle and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },          
+                                    { text = "|cFFABD473"..RetrieveSpellName(147362).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].CShot, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].CShot = not TehrsCDs["Show Settings"].CShot
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFABD473"..RetrieveSpellName(147362).."|r "..( TehrsCDs["Show Settings"].CShot and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },            
+                                    { text = "|cFFFFF569"..RetrieveSpellName(1766).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Kick,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Kick = not TehrsCDs["Show Settings"].Kick
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFFF569"..RetrieveSpellName(1766).."|r "..( TehrsCDs["Show Settings"].Kick and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },           
+                                    { text = "|cFF69CCF0"..RetrieveSpellName(2139).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].CSpell,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].CSpell = not TehrsCDs["Show Settings"].CSpell
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF69CCF0"..RetrieveSpellName(2139).."|r "..( TehrsCDs["Show Settings"].CSpell and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                   
+                                    { text = "|cFF9482C9"..RetrieveSpellName(171140).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].SpellLock,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].SpellLock = not TehrsCDs["Show Settings"].SpellLock
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF9482C9"..RetrieveSpellName(171140).."|r "..( TehrsCDs["Show Settings"].SpellLock and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },            
+                                    { text = "|cFF00FF96"..RetrieveSpellName(116705).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].SStrike, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].SStrike = not TehrsCDs["Show Settings"].SStrike
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF00FF96"..RetrieveSpellName(116705).."|r "..( TehrsCDs["Show Settings"].SStrike and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                   
+                                    { text = " ", notCheckable = 1, disabled = true},    
+                                    { text = "|cFFFFFFFF"..buttonText["Cancel"], notCheckable = 1}
+                                }
+                            },        
+                            { text = buttonText["L2N9.4"], keepShownOnClick = true, hasArrow = true, notCheckable = 1,
+                                menuList = { 
+                                    { text = "|cFFFF7D0A"..RetrieveSpellName(20484).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Rebirth, 
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Rebirth = not TehrsCDs["Show Settings"].Rebirth
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFF7D0A"..RetrieveSpellName(20484).."|r "..( TehrsCDs["Show Settings"].Rebirth and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },            
+                                    { text = "|cFFC41F3B"..RetrieveSpellName(61999).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].RaiseAlly,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].RaiseAlly = not TehrsCDs["Show Settings"].RaiseAlly
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFFC41F3B"..RetrieveSpellName(61999).."|r "..( TehrsCDs["Show Settings"].RaiseAlly and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },            
+                                    { text = "|cFF0070DE"..RetrieveSpellName(20608).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Ankh,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Ankh = not TehrsCDs["Show Settings"].Ankh
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF0070DE"..RetrieveSpellName(20608).."|r "..( TehrsCDs["Show Settings"].Ankh and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },            
+                                    { text = "|cFF9482C9"..RetrieveSpellName(20707).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Soulstone,
+                                        func = function()
+                                            TehrsCDs["Show Settings"].Soulstone = not TehrsCDs["Show Settings"].Soulstone
+                                            print("|cFF00A2E8Tehr's RaidCDs:|r |cFF9482C9"..RetrieveSpellName(20707).."|r "..( TehrsCDs["Show Settings"].Soulstone and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+                                        end
+                                    },                                
+                                    { text = " ", notCheckable = 1, disabled = true},    
+                                    { text = "|cFFFFFFFF"..buttonText["Cancel"], notCheckable = 1}
+                                } 
+                            },
+                            { text = " ", notCheckable = 1, disabled = true},
+                            { text = buttonText["Cancel"], notCheckable = 1}
+                        }
+                    },
+                    { text = " ", notCheckable = 1, disabled = true},    
+                    { text = "|cFFFFFFFF"..buttonText["Cancel"], notCheckable = 1}            
+                }
+                local menuFrame = CreateFrame("Frame", "ExampleMenuFrame", UIParent, "UIDropDownMenuTemplate")
+                menuFrame:SetPoint("CENTER", UIParent, "Center")
+                menuFrame:Hide()
+                EasyMenu(menu, menuFrame, "cursor", 0 , 0, "MENU");
+            elseif button == "RightButton" then 
+                TehrsCDs.minmaxDisplay = not TehrsCDs.minmaxDisplay
+                print("|cFF00A2E8Tehr's RaidCDs:|r "..( TehrsCDs.minmaxDisplay and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ));
+            end
+    end)
+    aura_env.parentButton:Show()
+elseif aura_env.parentButton then
+    aura_env.parentButton:Hide()
+end
