@@ -1,0 +1,24 @@
+NEWS:
+    - Battle for Azeroth is here, and with it come many, MANY changes!
+	
+    - I'm always looking for improvements on this WeakAura. Contact me
+		on Discord at Tehr#5246 or post a comment on wago.io/RaidCDs
+
+BUGS:
+    - Fixed some issues with improved abilities not displaying (Cap Totem, Shockwave, etc.)
+    - Added support for Grimoire of Sacrifice: Spell Lock
+    - Removed a few more references to Hunter Pet Rez
+    - Removed some references to Death Knight Raid CDS
+    - Fixed some issues that would cause translations not to display a complete button menu
+	
+FEATURES:    
+    - Added Italian translation data 
+    - Added the option to hide empty sections (credit to Oaquasis)
+    - Added the option to only show abilities that are on cooldown (credit to Oaquasis)
+
+	
+	
+	
+	
+YOU CAN SAFELY DELETE THE \"WHAT'S NEW?\" AURA ONCE YOU HAVE READ THIS",
+    
