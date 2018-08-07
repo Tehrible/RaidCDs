@@ -1,0 +1,11 @@
+function()
+    local parentName = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]
+    if (parentName["TehrsRaidCDs"] == nil) then parentName["TehrsRaidCDs"] = {} end    
+    if (parentName["TehrsRaidCDs"]["Show Settings"] == nil) then parentName["TehrsRaidCDs"]["Show Settings"] = {} end
+    local TehrsCDs = parentName["TehrsRaidCDs"]    
+    if TehrsCDs["Show Settings"].WhenSolo or (GetNumGroupMembers() > 0) then
+        if TehrsCDs.minmaxDisplay and TehrsCDs._raidCDs_namesText ~= "\n" then
+            return true
+        end
+    end
+end
