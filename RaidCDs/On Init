@@ -29,10 +29,11 @@ aura_env.recolor = true -- If true, players' names and cooldowns will be colored
 aura_env.deadColor = "|cFF333333"; -- Players' names and cooldowns will be this color when they're dead
 aura_env.outOfRangeColor = "|cFF888888"; -- Players' names and cooldowns will be this color when they're out of range
 aura_env.AprilFools = true -- Displays the April Fools Eggo sample text on April 1st and 2nd
-aura_env.CDTextxOffset = 15 -- Adjusts the position of the CD Names (e.g. Grasp, I-Bark) +right, -left
+aura_env.CDTextxOffset = 10 -- Adjusts the position of the CD Names (e.g. Grasp, I-Bark) +right, -left
 aura_env.timeTextxOffset = -5 -- Adjusts the position of the timers (e.g. READY, 1:23) +right, -left
 aura_env.textyOffset = 10 -- Adjusts the position of all text (line it up with the background) +up, -down
 aura_env.nameMaxLength = 8	
+aura_env.buttonsToggled = false
 TehrsCDs["Show Settings"].WhenSolo = true -- Select "true" if you want to display when you're not in a group (e.g. to display just your own auras)
 aura_env.pollWhileHidden = true -- If true, will still check for CDs even when hidden (false --> just sits while hidden)
 aura_env.pollRate = 1 -- Change this number to adjust how often the aura will poll the group to check for CDs in seconds 
@@ -293,8 +294,17 @@ aura_env.CheckPetAbilities = function(currentPlayer,currentPet,currentPlayerClas
 			else
 				TehrsCDs._interrupts_warlocks[currentPlayer]["Spell Lock"] = nil;
 			end
-		elseif not sacSpecced then	
+		else	
 			TehrsCDs._interrupts_warlocks[currentPlayer]["Spell Lock"] = nil;
+		end
+	end
+	
+	if sacSpecced then
+		if TehrsCDs["Show Settings"].SpellLock then
+			if (TehrsCDs._interrupts_warlocks[currentPlayer]["Spell Lock"] == nil) then
+				TehrsCDs._interrupts_warlocks[currentPlayer]["Spell Lock"] = GetTime();
+			end
+			if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: added Felhunter Spell Lock CD") end
 		end
 	end
 end
@@ -383,15 +393,15 @@ TehrsCDs._immunityCDs_mages = nil;
 TehrsCDs._immunityCDs_dhs = nil; 
 TehrsCDs._utilityCDs_hunters = nil;
 TehrsCDs._utilityCDs_rogues = nil; 
-TehrsCDs._raidCDs_groupPoll = GetTime();
-TehrsCDs._raidCDs_groupPoll_state = nil;
-TehrsCDs._raidCDs_groupPoll_playerCounter = nil;
-TehrsCDs._raidCDs_groupPoll_currentPlayer = nil;
 
 --Initialization Default
 TehrsCDs.minmaxDisplay = true
 TehrsCDs.encounterStart = false
-TehrsCDs._raidCDs_textPoll = nil;
+TehrsCDs._raidCDs_textPoll = GetTime();
+TehrsCDs._raidCDs_groupPoll = GetTime();
+TehrsCDs._raidCDs_groupPoll_state = nil;
+TehrsCDs._raidCDs_groupPoll_playerCounter = nil;
+TehrsCDs._raidCDs_groupPoll_currentPlayer = nil;
 TehrsCDs["Show Settings"].SortByTimer = TehrsCDs["Show Settings"].SortByTimer or false 
 
 --Group Tables
@@ -1480,6 +1490,7 @@ parentButton:SetScript("OnClick", function (self, button, down)
 		if parentButton then parentButton:Hide() end
 	end
 end)
+
 maximizeButton:SetScript("OnClick", function (self, button, down)
 	TehrsCDs.minmaxDisplay = true
 	bar.bg:SetVertexColor(0,0,0,TehrsCDs.BackgroundAlpha)
@@ -1487,3 +1498,18 @@ maximizeButton:SetScript("OnClick", function (self, button, down)
 	if parentButton then parentButton:Show() end
 	if maximizeButton then maximizeButton:Hide() end
 end)
+
+aura_env.hideDisplayWhenEmpty = function(hideDisplay)
+	if parentButton and parentButton:IsShown() and hideDisplay then
+		_,_,_,TehrsCDs.BackgroundAlpha = bar.bg:GetVertexColor() or 0
+		bar.bg:SetVertexColor(0,0,0,0)
+		parentButton:Hide()
+	elseif parentButton and not parentButton:IsShown() and not hideDisplay then
+		bar.bg:SetVertexColor(0,0,0,TehrsCDs.BackgroundAlpha)
+		parentButton:Show()
+	end
+end
+
+if not (TehrsCDs["Show Settings"].allExterns or TehrsCDs["Show Settings"].allCDs or TehrsCDs["Show Settings"].allUtility or TehrsCDs["Show Settings"].allImmunityCDs or TehrsCDs["Show Settings"].allAoECCs or TehrsCDs["Show Settings"].allInterrupts or TehrsCDs["Show Settings"].allRezzes) or (TehrsCDs["Show Settings"].ShowEmptySections == false and TehrsCDs["Show Settings"].ShowOnCooldownOnly == true) then
+	print("|cFF00A2E8Tehr's RaidCDs:|r If something happened and you can't see Tehr's RaidCDs, type the following:\n   /script WeakAuras.ScanEvents(\"TehrsCDs_ShowDisplay\")")
+end
