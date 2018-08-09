@@ -35,6 +35,8 @@ function (event, arg1, eventType, arg2, sourceGUID, sourceName, sourceFlags, sou
 	-- Enables the display (if it was disabled)
 	elseif event == "TehrsCDs_ShowDisplay" then -- /script WeakAuras.ScanEvents("TehrsCDs_ShowDisplay")
 		TehrsCDs.minmaxDisplays = true
+		TehrsCDs["Show Settings"].ShowEmptySections = true
+		TehrsCDs["Show Settings"].ShowOnCooldownOnly = false
 		
 		print("|cFF00A2E8Tehr's RaidCDs:|r Display is now |cFF00FF00ENABLED|r")          
 		
@@ -519,16 +521,12 @@ function (event, arg1, eventType, arg2, sourceGUID, sourceName, sourceFlags, sou
 				
 				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_Engine then print("Engine: "..sourceName.." cast "..spellName) end 
 				
-			elseif ((spellID == 171140 or spellID == 119910 or spellID == 19647 or spellID == 119898) and TehrsCDs["Show Settings"].SpellLock and eventType == "SPELL_CAST_SUCCESS") then
-				-- Spell Lock --
-				if (TehrsCDs._interrupts_warlocks == nil) then TehrsCDs._interrupts_warlocks = { } end        
-				if (TehrsCDs._interrupts_warlocks[sourceName] == nil) then TehrsCDs._interrupts_warlocks[sourceName] = { } end	
-				
-				TehrsCDs._interrupts_warlocks[sourceName]["Spell Lock"] = GetTime() + 24;  
-				
-				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_Engine then print("Engine: "..sourceName.." cast "..spellName) end 
-				
-			elseif ((spellID == 171138 or spellID == 19647) and TehrsCDs["Show Settings"].SpellLock and eventType == "SPELL_CAST_SUCCESS") then
+			elseif ((spellID == 132409 or -- ability you get from grimoire of sacrifice
+					spellID == 119910 or -- your ability with felhunter active
+					spellID == 19647 or -- felhunter's spell lock
+						-- These spellIDs are just fall-backs, the above 3 abilities should be all you need
+						spellID == 171138 or spellID == 171140 or spellID == 251523 or spellID == 251922 or spellID == 76417 or spellID == 119898)-- Warlock Command Demon
+					and TehrsCDs["Show Settings"].SpellLock and eventType == "SPELL_CAST_SUCCESS") then
 				-- Spell Lock : PET --
 				if (TehrsCDs._interrupts_warlocks == nil) then TehrsCDs._interrupts_warlocks = { } end        
 				if (TehrsCDs._interrupts_warlocks[sourceName] == nil) then TehrsCDs._interrupts_warlocks[sourceName] = { } end	
@@ -538,15 +536,6 @@ function (event, arg1, eventType, arg2, sourceGUID, sourceName, sourceFlags, sou
 				TehrsCDs._interrupts_warlocks[owner]["Spell Lock"] = GetTime() + 24;  
 				
 				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_Engine then print("Engine: "..sourceName.." cast "..spellName) end 
-				
-			elseif ((spellID == 171140 or spellID == 119910 or spellID == 119898 or spellID == 132409) and TehrsCDs["Show Settings"].SpellLock and eventType == "SPELL_CAST_SUCCESS") then
-				-- Spell Lock : COMMAND DEMON --
-				if (TehrsCDs._interrupts_warlocks == nil) then TehrsCDs._interrupts_warlocks = { } end        
-				if (TehrsCDs._interrupts_warlocks[sourceName] == nil) then TehrsCDs._interrupts_warlocks[sourceName] = { } end	
-				
-				TehrsCDs._interrupts_warlocks[sourceName]["Spell Lock"] = GetTime() + 24;  
-				
-				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_Engine then print("Engine: "..sourceName.." cast "..spellName) end 				
 				
 			elseif (spellID == 15487 and TehrsCDs["Show Settings"].Silence and eventType == "SPELL_CAST_SUCCESS") then
 				-- Priest: Silence --        
@@ -594,7 +583,15 @@ function (event, arg1, eventType, arg2, sourceGUID, sourceName, sourceFlags, sou
 				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_Engine then print("Engine: "..sourceName.." cast "..spellName) end  
 			
 			--[[		
-			elseif ((spellID == 28730 or spellID == 50613 or spellID == 202719 or spellID == 80483 or spellID == 129597 or spellID == 155145 or spellID == 232633 or spellID == 25046 or spellID == 69179) and eventType == "SPELL_CAST_SUCCESS" and TehrsCDs["Show Settings"].Torrent) then
+			elseif ((spellID == 28730 or 
+					spellID == 50613 or 
+					spellID == 202719 or 
+					spellID == 80483 or 
+					spellID == 129597 or 
+					spellID == 155145 or 
+					spellID == 232633 or 
+					spellID == 25046 or 
+					spellID == 69179) and eventType == "SPELL_CAST_SUCCESS" and TehrsCDs["Show Settings"].Torrent) then
 				-- Arcane Torrent --  p.s. Blizzard why do you have a new spellID for each class? pls
 				if (TehrsCDs._interrupts_belfs == nil) then TehrsCDs._interrupts_belfs = { } end        
 				if (TehrsCDs._interrupts_belfs[sourceName] == nil) then TehrsCDs._interrupts_belfs[sourceName] = { } end
@@ -1197,5 +1194,6 @@ function (event, arg1, eventType, arg2, sourceGUID, sourceName, sourceFlags, sou
 			TehrsCDs["Custom Abilities"].UseCDs(event, arg1, eventType, arg2, sourceGUID, sourceName, sourceFlags, sourceFlags2, destGUID, destName, destFlags, destFlags2, spellID, spellName, spellSchool, extraSpellID, extraSpellName, extraSpellSchool)
 		end
 	end
+	
 	return true
 end
