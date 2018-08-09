@@ -1,4 +1,5 @@
 function ()    
+    
 	local parentName = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]
 	if (parentName["TehrsRaidCDs"] == nil) then parentName["TehrsRaidCDs"] = {} end	
 	if (parentName["TehrsRaidCDs"]["Show Settings"] == nil) then parentName["TehrsRaidCDs"]["Show Settings"] = {} end
@@ -32,6 +33,9 @@ function ()
 	local regionFrameLevel = region:GetFrameLevel()	
 	local point, relativeTo, relativePoint, xOffset, yOffset = region:GetPoint()
     local fontName, fontSize, fontFlags = region.text:GetFont()
+	if not fontSize then
+		fontSize = WeakAurasSaved.displays[aura_env.id]["textSize"] or 11
+	end
 	
 	if not TehrsCDs.minmaxDisplay and not aura_env.pollWhileHidden then
 		if region.namesText then region.namesText:SetText("") end
@@ -2330,14 +2334,19 @@ function ()
 		end
 		
 		if TehrsCDs.minmaxDisplay then
-			_, TehrsCDs.NamesTextLineCount = string.gsub(TehrsCDs._raidCDs_namesText, "\n", "");
-			local newWidth = 200 + (fontSize-11)*15
-			local newHeight = TehrsCDs.NamesTextLineCount * fontSize
+			_, TehrsCDs.NamesTextLineCount = string.gsub(TehrsCDs._raidCDs_namesText, "\n", "");			
+			region:SetHeight(TehrsCDs.NamesTextLineCount * fontSize); 
 			
-			region:SetHeight(newHeight); 
-			region:SetWidth(newWidth) 
-			if TehrsCDs.minmaxDisplay then
+			if TehrsCDs.minmaxDisplay and not aura_env.buttonsToggled then
 				_,_,_,TehrsCDs.BackgroundAlpha = region.bar.bg:GetVertexColor()
+			end
+			
+			if TehrsCDs.NamesTextLineCount == 0 and not aura_env.buttonsToggled then
+				aura_env.buttonsToggled = true
+				aura_env.hideDisplayWhenEmpty(true)
+			elseif TehrsCDs.NamesTextLineCount ~= 0 and aura_env.buttonsToggled then
+				aura_env.buttonsToggled = false
+				aura_env.hideDisplayWhenEmpty(false)
 			end
 		end
 		
