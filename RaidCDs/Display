@@ -577,7 +577,7 @@ function ()
 						TehrsCDs._raidCDs_druids[playerName]["Flourish"] = nil;                    
 					end 				
 					local _, _, _, treeSpecced = GetTalentInfo(5, 3, activeSpec, not isPlayer, playerName); 
-					if (flourishSpecced)then
+					if (treeSpecced)then
 						if TehrsCDs["Show Settings"].Tree then 
 							if (TehrsCDs._raidCDs_druids[playerName]["Tree"] == nil) then
 								TehrsCDs._raidCDs_druids[playerName]["Tree"] = GetTime();
