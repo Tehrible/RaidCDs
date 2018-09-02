@@ -1,22 +1,24 @@
 NEWS:
-    - Battle for Azeroth is here, and with it come many, MANY changes!
-	
-    - I'm always looking for improvements on this WeakAura. Contact me
-		on Discord at Tehr#5246 or post a comment on wago.io/RaidCDs
+	- I've combined everything into one aura. Now, you can change the
+		text size by simply adjusting the Right Text slider, and you
+		can change the width of the display by adjusting the width
+		slider, and both are independent. 
+		
+	- I'm always looking for improvements on this WeakAura. Contact me
+		on Discord at Tehr#5246 or post a comment on wago.io/RaidCDs		
+
 
 BUGS:
-	- Currently the Battle Rez Timer does not work during a
-		raid encounter. Unfortunately, there's nothing I can
-		do about that for now, so Battle Rezzes will no
-		longer display outside of M+ dungeons
-	
-FEATURES:    
-    - Slightly adjusted spacing on Battle Rez Timer
-	- Fixed some Italian translations
+	- Updated Italian translations
 
+
+FEATURES:	
+	- Combined everything into one aura! I'm leaving it in a group so
+		that translations are still easily achievable
+	- Slightly adjusted spacing on Battle Rez Timer
 	
-	
-	
-	
-YOU CAN SAFELY DELETE THE \"WHAT'S NEW?\" AURA ONCE YOU HAVE READ THIS",
-    
+
+
+
+
+YOU CAN SAFELY DELETE THE "WHAT'S NEW?" AURA ONCE YOU HAVE READ THIS
