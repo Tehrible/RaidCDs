@@ -1,5 +1,6 @@
 function ()    
     
+	-- initializes TehrsCDs table for setting storage
 	local parentName = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]
 	if (parentName["TehrsRaidCDs"] == nil) then parentName["TehrsRaidCDs"] = {} end	
 	if (parentName["TehrsRaidCDs"]["Show Settings"] == nil) then parentName["TehrsRaidCDs"]["Show Settings"] = {} end
@@ -14,6 +15,7 @@ function ()
 	if (parentName["TehrsRaidCDs"]["Translation Settings"]["itIT"] == nil) then parentName["TehrsRaidCDs"]["Translation Settings"]["itIT"] = {} end
 	local TehrsCDs = parentName["TehrsRaidCDs"]	
 
+	-- initializes variables
     if (TehrsCDs._raidCDs_namesText == nil) then TehrsCDs._raidCDs_namesText = "" end
 	if (TehrsCDs._raidCDs_cdText == nil) then TehrsCDs._raidCDs_cdText = "" end
 	if (TehrsCDs._raidCDs_timeText == nil) then TehrsCDs._raidCDs_timeText = "" end	
@@ -419,9 +421,7 @@ function ()
 				if (TehrsCDs._externCDs_dhs == nil) then TehrsCDs._externCDs_dhs = {} end
 				if (TehrsCDs._externCDs_dhs[playerName] == nil) then TehrsCDs._externCDs_dhs[playerName] = {} end
 				if (TehrsCDs._interrupts_dhs == nil) then TehrsCDs._interrupts_dhs = {} end
-				if (TehrsCDs._interrupts_dhs[playerName] == nil) then TehrsCDs._interrupts_dhs[playerName] = {} end
-				if (TehrsCDs._utilityCDs_dhs == nil) then TehrsCDs._utilityCDs_dhs = {} end
-				if (TehrsCDs._utilityCDs_dhs[playerName] == nil) then TehrsCDs._utilityCDs_dhs[playerName] = {} end       
+				if (TehrsCDs._interrupts_dhs[playerName] == nil) then TehrsCDs._interrupts_dhs[playerName] = {} end   
 				if (TehrsCDs._aoeCCs_dhs == nil) then TehrsCDs._aoeCCs_dhs = {} end
 				if (TehrsCDs._aoeCCs_dhs[playerName] == nil) then TehrsCDs._aoeCCs_dhs[playerName] = {} end
 				if (TehrsCDs._immunityCDs_dhs == nil) then TehrsCDs._immunityCDs_dhs = {} end
@@ -576,6 +576,16 @@ function ()
 					else
 						TehrsCDs._raidCDs_druids[playerName]["Flourish"] = nil;                    
 					end 				
+					local _, _, _, treeSpecced = GetTalentInfo(5, 3, activeSpec, not isPlayer, playerName); 
+					if (flourishSpecced)then
+						if TehrsCDs["Show Settings"].Tree then 
+							if (TehrsCDs._raidCDs_druids[playerName]["Tree"] == nil) then
+								TehrsCDs._raidCDs_druids[playerName]["Tree"] = GetTime();
+							end 
+						end                                       
+					else
+						TehrsCDs._raidCDs_druids[playerName]["Tree"] = nil;                    
+					end 									
 					if TehrsCDs["Show Settings"].Innervate then
 						if (TehrsCDs._utilityCDs_druids[playerName]["Innervate"] == nil) then
 							TehrsCDs._utilityCDs_druids[playerName]["Innervate"] = GetTime();
@@ -618,6 +628,7 @@ function ()
 					TehrsCDs._externCDs_druids[playerName]["I-Bark+"] = nil;    
 					TehrsCDs._externCDs_druids[playerName]["I-Bark"] = nil;      
 					TehrsCDs._raidCDs_druids[playerName]["Flourish"] = nil;  				
+					TehrsCDs._raidCDs_druids[playerName]["Tree"] = nil;  				
 					TehrsCDs._utilityCDs_druids[playerName]["Roar"] = nil;      				
 				else
 					if TehrsCDs["Show Settings"].Roar then
@@ -639,6 +650,7 @@ function ()
 					TehrsCDs._aoeCCs_druids[playerName]["Ursol"] = nil;
 					TehrsCDs._utilityCDs_druids[playerName]["Treants"] = nil;
 					TehrsCDs._raidCDs_druids[playerName]["Flourish"] = nil;  
+					TehrsCDs._raidCDs_druids[playerName]["Tree"] = nil;  
 				end   
 				
 				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: Added Druid CDs") end
@@ -956,7 +968,7 @@ function ()
 				end     
 				
 				if (specName == 264) then
-					local _, _, _, ancestralProtectionTotemSpecced = GetTalentInfo(5, 1, activeSpec, not isPlayer, playerName);            
+					local _, _, _, ancestralProtectionTotemSpecced = GetTalentInfo(5, 3, activeSpec, not isPlayer, playerName);            
 					if (ancestralProtectionTotemSpecced) then
 						if TehrsCDs["Show Settings"].AProt then
 							if (TehrsCDs._raidCDs_shamans[playerName]["A-Prot"] == nil) then
@@ -1641,7 +1653,8 @@ function ()
 									or (not TehrsCDs["Show Settings"].Darkness and cdName == "Darkness")
 									or (not TehrsCDs["Show Settings"].Tranq and cdName == "Tranq")
 									or (not TehrsCDs["Show Settings"].Tranq and cdName == "Tranq+")
-									or (not TehrsCDs["Show Settings"].Flourish and cdName == "Flourish")								
+									or (not TehrsCDs["Show Settings"].Flourish and cdName == "Flourish")		
+									or (not TehrsCDs["Show Settings"].Tree and cdName == "Tree")										
 									or (not TehrsCDs["Show Settings"].AuraM and cdName == "Aura-M")
 									or (not TehrsCDs["Show Settings"].Wings and cdName == "Wings")			
 									or (not TehrsCDs["Show Settings"].Wings and cdName == "Wings+")										
@@ -1735,8 +1748,7 @@ function ()
 				local cdTexts = { }; 
 				local allUtility = { };
 				
-				allUtility["|cFFC41F3B"] = TehrsCDs._utilityCDs_dks;    
-				allUtility["|cFFA330C9"] = TehrsCDs._utilityCDs_dhs;    
+				allUtility["|cFFC41F3B"] = TehrsCDs._utilityCDs_dks;     
 				allUtility["|cFFFF7D0A"] = TehrsCDs._utilityCDs_druids;
 				allUtility["|cFFF58CBA"] = TehrsCDs._utilityCDs_paladins;
 				allUtility["|cFFFFFFFF"] = TehrsCDs._utilityCDs_priests;
