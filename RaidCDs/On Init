@@ -108,6 +108,7 @@ TehrsCDs["Show Settings"].Rapture = TehrsCDs["Show Settings"].Rapture == nil and
 TehrsCDs["Show Settings"].Darkness = TehrsCDs["Show Settings"].Darkness == nil and true or TehrsCDs["Show Settings"].Darkness
 TehrsCDs["Show Settings"].Tranq = TehrsCDs["Show Settings"].Tranq == nil and true or TehrsCDs["Show Settings"].Tranq
 TehrsCDs["Show Settings"].Flourish = TehrsCDs["Show Settings"].Flourish == nil and true or TehrsCDs["Show Settings"].Flourish
+TehrsCDs["Show Settings"].Tree = TehrsCDs["Show Settings"].Tree == nil and true or TehrsCDs["Show Settings"].Tree
 TehrsCDs["Show Settings"].AuraM = TehrsCDs["Show Settings"].AuraM == nil and true or TehrsCDs["Show Settings"].AuraM
 TehrsCDs["Show Settings"].Aegis = TehrsCDs["Show Settings"].Aegis == nil and true or TehrsCDs["Show Settings"].Aegis
 TehrsCDs["Show Settings"].AProt = TehrsCDs["Show Settings"].AProt == nil and true or TehrsCDs["Show Settings"].AProt
@@ -276,36 +277,26 @@ end
 
 -- adds pet abilities to the display
 aura_env.CheckPetAbilities = function(currentPlayer,currentPet,currentPlayerClass,activeSpec,isPlayer)
+	if currentPlayerClass ~= 9 then return end
+	
 	if (TehrsCDs._interrupts_warlocks == nil) then TehrsCDs._interrupts_warlocks = {} end
-	if (TehrsCDs._interrupts_warlocks[currentPlayer] == nil) then TehrsCDs._interrupts_warlocks[currentPlayer] = {} end         
+	if (TehrsCDs._interrupts_warlocks[currentPlayer] == nil) then TehrsCDs._interrupts_warlocks[currentPlayer] = {} end      
+	
 	local _, _, _, sacSpecced = GetTalentInfo(6, 3, activeSpec, not isPlayer, playerName);  
+	if WA_GetUnitAura(currentPlayer,"Grimoire of Sacrifice") then sacSpecced = true end
 	
-	if (GetLocale() == "enUS") or (GetLocale() == "enGB") then
-		if UnitExists(currentPet) then
-			if TehrsCDs["Show Settings"].SpellLock then
-				if UnitCreatureFamily(currentPet) == "Felhunter" then
-					if (TehrsCDs._interrupts_warlocks[currentPlayer]["Spell Lock"] == nil) then
-						TehrsCDs._interrupts_warlocks[currentPlayer]["Spell Lock"] = GetTime();
-					end
-					if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: added Felhunter Spell Lock CD") end
-				else
-					TehrsCDs._interrupts_warlocks[currentPlayer]["Spell Lock"] = nil;
-				end
-			else
-				TehrsCDs._interrupts_warlocks[currentPlayer]["Spell Lock"] = nil;
-			end
-		else	
-			TehrsCDs._interrupts_warlocks[currentPlayer]["Spell Lock"] = nil;
-		end
-	end
-	
-	if sacSpecced then
+	if (UnitExists(currentPet) and (UnitCreatureFamily(currentPet) == "Felhunter" or UnitCreatureFamily(currentPet) == "Observer") and (GetLocale() == "enUS" or GetLocale() == "enGB")) or sacSpecced then
 		if TehrsCDs["Show Settings"].SpellLock then
 			if (TehrsCDs._interrupts_warlocks[currentPlayer]["Spell Lock"] == nil) then
 				TehrsCDs._interrupts_warlocks[currentPlayer]["Spell Lock"] = GetTime();
 			end
-			if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: added Felhunter Spell Lock CD") end
+			if TehrsCDs.DEBUG and TehrsCDs.DEBUG_GroupPoll then print("GroupPoll: added Spell Lock CD") end
+			return
+		else
+			TehrsCDs._interrupts_warlocks[currentPlayer]["Spell Lock"] = nil;
 		end
+	else
+		TehrsCDs._interrupts_warlocks[currentPlayer]["Spell Lock"] = nil;
 	end
 end
 
@@ -353,7 +344,7 @@ TehrsCDs._raidCDs_shamans = nil;
 TehrsCDs._raidCDs_warriors = nil;
 TehrsCDs._raidCDs_dhs = nil;
 TehrsCDs._utilityCDs_dks = nil;    
-TehrsCDs._aoeCCs_dhs = nil;                
+TehrsCDs._aoeCCs_dhs = nil;            
 TehrsCDs._utilityCDs_shamans = nil;
 TehrsCDs._utilityCDs_druids = nil;
 TehrsCDs._utilityCDs_priests = nil;
@@ -1059,6 +1050,12 @@ parentButton:SetScript("OnClick", function (self, button, down)
 								func = function()
 									TehrsCDs["Show Settings"].Flourish = not TehrsCDs["Show Settings"].Flourish
 									print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFF7D0A"..RetrieveSpellName(197721).."|r "..( TehrsCDs["Show Settings"].Flourish and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
+								end
+							},  							
+							{ text = "|cFFFF7D0A"..RetrieveSpellName(33891).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].Tree,
+								func = function()
+									TehrsCDs["Show Settings"].Tree = not TehrsCDs["Show Settings"].Tree
+									print("|cFF00A2E8Tehr's RaidCDs:|r |cFFFF7D0A"..RetrieveSpellName(33891).."|r "..( TehrsCDs["Show Settings"].Tree and "|cFF00FF00"..buttonText["printEnabled"].."|r" or "|cFFFF0000"..buttonText["printDisabled"].."|r" ))
 								end
 							},  								
 							{ text = "|cFFF58CBA"..RetrieveSpellName(31821).."|r", isNotRadio = true, keepShownOnClick = true, checked = TehrsCDs["Show Settings"].AuraM,
