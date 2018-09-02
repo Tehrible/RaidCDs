@@ -1,5 +1,5 @@
 function (event, arg1, eventType, arg2, sourceGUID, sourceName, sourceFlags, sourceFlags2, destGUID, destName, destFlags, destFlags2, spellID, spellName, spellSchool, extraSpellID, extraSpellName, extraSpellSchool)
-    
+    	
 	local parentName = WeakAurasSaved.displays[WeakAuras.regions[aura_env.id].region:GetParent().id]
 	if (parentName["TehrsRaidCDs"] == nil) then parentName["TehrsRaidCDs"] = {} end	
 	if (parentName["TehrsRaidCDs"]["Show Settings"] == nil) then parentName["TehrsRaidCDs"]["Show Settings"] = {} end
@@ -225,12 +225,12 @@ function (event, arg1, eventType, arg2, sourceGUID, sourceName, sourceFlags, sou
 				local shadowfury2 = TehrsCDs._aoeCCs_warlocks[sourceName]["Shadowfury+"];
 				
 				if (shadowfury1 ~= nil) then
-					TehrsCDs._aoeCCs_warlocks[sourceName]["Shadowfury+"] = GetTime() + 45;
-					TehrsCDs._aoeCCs_warlocks[sourceName]["Shadowfury"] = nil;
-				end
-				if (shadowfury2 ~= nil) then
 					TehrsCDs._aoeCCs_warlocks[sourceName]["Shadowfury"] = GetTime() + 60;
 					TehrsCDs._aoeCCs_warlocks[sourceName]["Shadowfury+"] = nil;
+				end
+				if (shadowfury2 ~= nil) then
+					TehrsCDs._aoeCCs_warlocks[sourceName]["Shadowfury+"] = GetTime() + 45;
+					TehrsCDs._aoeCCs_warlocks[sourceName]["Shadowfury"] = nil;
 				end       
 				
 				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_Engine then print("Engine: "..sourceName.." cast "..spellName) end    
@@ -522,10 +522,15 @@ function (event, arg1, eventType, arg2, sourceGUID, sourceName, sourceFlags, sou
 				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_Engine then print("Engine: "..sourceName.." cast "..spellName) end 
 				
 			elseif ((spellID == 132409 or -- ability you get from grimoire of sacrifice
+			
 					spellID == 119910 or -- your ability with felhunter active
+					spellID == 119911 or -- your ability with observer active
+					
 					spellID == 19647 or -- felhunter's spell lock
-						-- These spellIDs are just fall-backs, the above 3 abilities should be all you need
-						spellID == 171138 or spellID == 171140 or spellID == 251523 or spellID == 251922 or spellID == 76417 or spellID == 119898)-- Warlock Command Demon
+					spellID == 115781 or -- observer's optical blast
+					
+						-- These spellIDs are just fall-backs, the above 5 abilities should be all you need
+						spellID == 171138 or spellID == 171140 or spellID == 251523 or spellID == 251922 or spellID == 76417 or spellID == 119898)
 					and TehrsCDs["Show Settings"].SpellLock and eventType == "SPELL_CAST_SUCCESS") then
 				-- Spell Lock : PET --
 				if (TehrsCDs._interrupts_warlocks == nil) then TehrsCDs._interrupts_warlocks = { } end        
@@ -784,6 +789,15 @@ function (event, arg1, eventType, arg2, sourceGUID, sourceName, sourceFlags, sou
 				TehrsCDs._raidCDs_druids[sourceName]["Flourish"] = GetTime() + 90;          
 				
 				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_Engine then print("Engine: "..sourceName.." cast "..spellName) end 			
+				
+			elseif (spellID == 33891 and TehrsCDs["Show Settings"].Tree and eventType == "SPELL_CAST_SUCCESS") then
+				-- Incarnation: Tree of Life --        
+				if (TehrsCDs._raidCDs_druids == nil) then TehrsCDs._raidCDs_druids = { } end        
+				if (TehrsCDs._raidCDs_druids[sourceName] == nil) then TehrsCDs._raidCDs_druids[sourceName] = { } end
+				
+				TehrsCDs._raidCDs_druids[sourceName]["Tree"] = GetTime() + 180;          
+				
+				if TehrsCDs.DEBUG and TehrsCDs.DEBUG_Engine then print("Engine: "..sourceName.." cast "..spellName) end 					
 			
 			elseif (spellID == 47536 and TehrsCDs["Show Settings"].Rapture and eventType == "SPELL_CAST_SUCCESS") then
 				-- Rapture --        
