@@ -39,7 +39,8 @@ if TehrsCDs["zhCN"].Translation_Chinese then
         "控制",
         "打断",
         "战复",
-        "战复计数"
+        "战复计数",
+	"驱散"
     }
     
     TehrsCDs["zhCN"].Translation_Chinese_buttonText = {
@@ -54,9 +55,9 @@ if TehrsCDs["zhCN"].Translation_Chinese then
         ["L1N3"] = "切换滑动条",
         ["L1N4"] = "常规显示设置",
         ["L1N8"] = "检查技能",
-		--["L1N9"] = "Sort CDs by Time",
-		["L1N10"] = "Show Empty Groups",
-		["L1N11"] = "Show Only On Cooldown",		
+	--["L1N9"] = "Sort CDs by Time",
+	["L1N10"] = "Show Empty Groups",
+	["L1N11"] = "Show Only On Cooldown",		
         ["L2N1.1"] = "常规设置",
         ["L2N2.1"] = "显示所有技能",
         ["L2N3.1"] = "显示单体技能",
@@ -66,6 +67,7 @@ if TehrsCDs["zhCN"].Translation_Chinese then
         ["L2N7.1"] = "显示控制技能",
         ["L2N8.1"] = "显示打断技能",
         ["L2N9.1"] = "显示战斗复活",
+	["L2N10.1"] = "Show Dispels",
         ["L1N5"] = "团队本显示设置",
         ["L2N1.2"] = "团队本设置",
         ["L2N2.2"] = "显示所有技能",
@@ -78,6 +80,7 @@ if TehrsCDs["zhCN"].Translation_Chinese then
         ["L2N9.2"] = "显示战斗复活",
         ["L2N10.2"] = "显示复生（萨满）",
         ["L2N11.2"] = "显示战复计数",
+	["L2N12.2"] = "Show Dispels",	
         ["L1N6"] = "重置冷却",
         ["L2N1.3"] = "重置冷却",
         ["L2N2.3"] = "重置所有技能",
@@ -88,6 +91,7 @@ if TehrsCDs["zhCN"].Translation_Chinese then
         ["L2N7.3"] = "重置控制技能",
         ["L2N8.3"] = "重置打断技能",
         ["L2N9.3"] = "重置战斗复活",
+	["L2N10.3"] = "Reset Dispels",
         ["L1N7"] = "显示冷却的技能",
         ["L2N1.4"] = "显示冷却的技能",
         ["L2N2.4"] = "|cFFF58CBA保护祝福|r视为单体或功能技能",
@@ -99,10 +103,15 @@ if TehrsCDs["zhCN"].Translation_Chinese then
         ["L2N8.4"] = "打断技能",
         ["L2N9.4"] = "战斗复活",
         ["L2N10.4"] = "复生（萨满）",
-        ["L2N11.4"] = "战复计数"
+        ["L2N11.4"] = "战复计数",
+	["L2N12.4"] = "Dispels" 
     }
     
     TehrsCDs["zhCN"].Translation_Chinese_abilityNames = {
+	--Dispels
+	["Torrent"] = "奥术洪流", 
+	["Mass"] = "群体驱散",
+	
         --Immunities
         ["Turtle"] = "灵龟守护",
         ["Turtle+"] = "灵龟守护+",
@@ -115,19 +124,19 @@ if TehrsCDs["zhCN"].Translation_Chinese then
         
         --Crowd Control
         ["Cap Totem"] = "电能图腾",
-		["Cap Totem+"] = "电能图腾+",
+	["Cap Totem+"] = "电能图腾+",
         ["Shadowfury"] = "暗影之怒",
-		["Shadowfury+"] = "暗影之怒+",
+	["Shadowfury+"] = "暗影之怒+",
         ["Infernal"] = "流星打击",
         ["Binding"] = "束缚射击",
         ["Sweep"] = "扫堂腿",
-		["Sweep+"] = "扫堂腿+",
+	["Sweep+"] = "扫堂腿+",
         ["Ursol"] = "乌索尔旋风",
         ["Typhoon"] = "台风",
         ["Mind Bomb"] = "心灵炸弹",
         ["Stomp"] = "战争践踏",
         ["Shockwave"] = "震荡波",
-		["Shockwave+"] = "震荡波+",
+	["Shockwave+"] = "震荡波+",
         ["Nova"] = "混乱新星",
         ["Nova+"] = "混乱新星+",
         ["Grasp"] = "血魔之握",
@@ -136,6 +145,7 @@ if TehrsCDs["zhCN"].Translation_Chinese then
         ["Thunderstorm"] = "雷霆风暴",
         ["Ring"] = "平心之环",
         ["Shining"] = "闪光力场",            
+	["Bull Rush"] = "蛮牛冲撞",
         
         --Interrupts
         ["Kick"] = "脚踢",
@@ -151,9 +161,8 @@ if TehrsCDs["zhCN"].Translation_Chinese then
         ["C-Spell"] = "法术反制",
         ["Spell Lock"] = "法术封锁",
         ["S-Beam"] = "日光术",
-        --["Torrent"] = "奥术洪流", Arcane Torrent isn't an interrupt anymore! Holding onto this until I add dispels.
         ["Silence"] = "沉默",
-		["Silence+"] = "沉默+",
+	["Silence+"] = "沉默+",
         ["S-Silence"] = "沉默咒符",
         ["S-Silence+"] = "沉默咒符+",
         
@@ -162,7 +171,6 @@ if TehrsCDs["zhCN"].Translation_Chinese then
         ["Raise Ally"] = "复活盟友",
         ["Soulstone"] = "灵魂石",
         ["Rebirth"] = "复生",
-        ["Pet Rez"] = "永恒守护者",
         
         --Utility CDs
         ["Tricks"] = "嫁祸诀窍",
@@ -173,12 +181,17 @@ if TehrsCDs["zhCN"].Translation_Chinese then
         ["Grip"] = "信仰飞跃",
         ["Wind Rush"] = "狂风图腾",
         ["Treants"] = "自然之力",
+	["Shroud"] = "潜伏帷幕",
+	["L-Grip"] = "信仰飞跃",
+	["D-Grip"] = "死亡之握",
+	["D-Grip+"] = "死亡之握+",
+	["Shadowmeld"] = "影遁",
         
         --Raid CDs
         ["Aura-M"] = "光环掌握",
         ["Aegis"] = "圣光护盾",
         ["VE"] = "吸血鬼拥抱",
-		["VE+"] = "吸血鬼拥抱+",
+	["VE+"] = "吸血鬼拥抱+",
         ["Darkness"] = "幻影打击",
         ["A-Prot"] = "先祖护佑",
         ["D-Hymn"] = "神圣赞美诗",
@@ -188,11 +201,17 @@ if TehrsCDs["zhCN"].Translation_Chinese then
         ["R-Cry"] = "命令怒吼",
         ["H-Tide"] = "治疗之潮",
         ["Barrier"] = "真言术：障",
-		["Barrier+"] = "真言术：障+",
+	["Barrier+"] = "真言术：障+",
         ["SLT"] = "灵魂链接",
         ["Revival"] = "还魂术",    
         ["Wings"] = "复仇之怒",        
         ["Wings+"] = "复仇之怒+",   		
+	["Ascendance"] = "升腾",
+	["Rapture"] = "全神贯注",
+	["Salvation"] = "圣言术：赎",
+	["Tree"] = "化身：生命之树",
+	["Apotheosis"] = "神圣化身",
+	["Flourish"] = "繁盛",
         
         --Externals
         ["Sac"] = "牺牲祝福",
@@ -225,7 +244,8 @@ if TehrsCDs["zhTW"].Translation_ChineseTraditional then
         "控制",
         "打斷",
         "戰複",
-        "戰複計數"
+        "戰複計數",
+	"驅散"
     }
     
     TehrsCDs["zhTW"].Translation_ChineseTraditional_buttonText = {
@@ -240,9 +260,9 @@ if TehrsCDs["zhTW"].Translation_ChineseTraditional then
         ["L1N3"] = "切換滑動條",
         ["L1N4"] = "常規顯示設定",
         ["L1N8"] = "檢查技能",
-		--["L1N9"] = "Sort CDs by Time",
-		["L1N10"] = "Show Empty Groups",
-		["L1N11"] = "Show Only On Cooldown",		
+	--["L1N9"] = "Sort CDs by Time",
+	["L1N10"] = "Show Empty Groups",
+	["L1N11"] = "Show Only On Cooldown",		
         ["L2N1.1"] = "常規設置",
         ["L2N2.1"] = "顯示所有技能",
         ["L2N3.1"] = "顯示單體技能",
@@ -252,6 +272,7 @@ if TehrsCDs["zhTW"].Translation_ChineseTraditional then
         ["L2N7.1"] = "顯示控制技能",
         ["L2N8.1"] = "顯示打斷技能",
         ["L2N9.1"] = "顯示戰鬥復活",
+	["L2N10.1"] = "Show Dispels",		
         ["L1N5"] = "團隊本顯示設定",
         ["L2N1.2"] = "團隊本設置",
         ["L2N2.2"] = "顯示所有技能",
@@ -264,6 +285,7 @@ if TehrsCDs["zhTW"].Translation_ChineseTraditional then
         ["L2N9.2"] = "顯示戰鬥復活",
         ["L2N10.2"] = "顯示複生（薩滿）",
         ["L2N11.2"] = "顯示戰複計數",
+	["L2N12.2"] = "Show Dispels",	
         ["L1N6"] = "重置冷卻",
         ["L2N1.3"] = "重置冷卻",
         ["L2N2.3"] = "重置所有技能",
@@ -274,6 +296,7 @@ if TehrsCDs["zhTW"].Translation_ChineseTraditional then
         ["L2N7.3"] = "重置控制技能",
         ["L2N8.3"] = "重置打斷技能",
         ["L2N9.3"] = "重置戰鬥復活",
+	["L2N10.3"] = "Reset Dispels",
         ["L1N7"] = "顯示冷卻的技能",
         ["L2N1.4"] = "顯示冷卻的技能",
         ["L2N2.4"] = "|cFFF58CBA保護祝福|r視為單體或功能技能",
@@ -285,10 +308,15 @@ if TehrsCDs["zhTW"].Translation_ChineseTraditional then
         ["L2N8.4"] = "打斷技能",
         ["L2N9.4"] = "戰鬥復活",
         ["L2N10.4"] = "複生（薩滿）",
-        ["L2N11.4"] = "戰複計數"
+        ["L2N11.4"] = "戰複計數",
+	["L2N12.4"] = "Dispels" 
     }
     
     TehrsCDs["zhTW"].Translation_ChineseTraditional_abilityNames = {
+	--Dispels
+	["Torrent"] = "奧流之術", 
+	["Mass"] = "Mass",	
+	
         --Immunities
         ["Turtle"] = "巨龜守護",
         ["Turtle+"] = "巨龜守護+",
@@ -301,19 +329,19 @@ if TehrsCDs["zhTW"].Translation_ChineseTraditional then
         
         --Crowd Control
         ["Cap Totem"] = "閃電奔流圖騰",
-		["Cap Totem+"] = "閃電奔流圖騰+",
+	["Cap Totem+"] = "閃電奔流圖騰+",
         ["Shadowfury"] = "暗影之怒",
-		["Shadowfury+"] = "暗影之怒+",
+	["Shadowfury+"] = "暗影之怒+",
         ["Infernal"] = "召喚地獄火",
         ["Binding"] = "禁錮射擊",
         ["Sweep"] = "掃葉腿",
-		["Sweep+"] = "掃葉腿+",
+	["Sweep+"] = "掃葉腿+",
         ["Ursol"] = "厄索之旋",
         ["Typhoon"] = "颶風",
         ["Mind Bomb"] = "心靈炸彈",
         ["Stomp"] = "戰爭踐踏",
         ["Shockwave"] = "震懾波",
-		["Shockwave+"] = "震懾波+",
+	["Shockwave+"] = "震懾波+",
         ["Nova"] = "混沌新星",
         ["Nova+"] = "混沌新星+",
         ["Grasp"] = "血魔之握",
@@ -322,6 +350,7 @@ if TehrsCDs["zhTW"].Translation_ChineseTraditional then
         ["Thunderstorm"] = "雷霆風暴",
         ["Ring"] = "和平之環",
         ["Shining"] = "閃耀聖力",            
+	["Bull Rush"] = "Bull Rush",
         
         --Interrupts
         ["Kick"] = "腳踢",
@@ -337,9 +366,8 @@ if TehrsCDs["zhTW"].Translation_ChineseTraditional then
         ["C-Spell"] = "法術反制",
         ["Spell Lock"] = "法術封鎖",
         ["S-Beam"] = "太陽光束",
-        --["Torrent"] = "奧流之術", Arcane Torrent isn't an interrupt anymore! Holding onto this until I add dispels.
         ["Silence"] = "沉默",
-		["Silence+"] = "沉默+",
+	["Silence+"] = "沉默+",
         ["S-Silence"] = "沉默符印",
         ["S-Silence+"] = "沉默符印+",
         
@@ -348,7 +376,6 @@ if TehrsCDs["zhTW"].Translation_ChineseTraditional then
         ["Raise Ally"] = "盟友複生",
         ["Soulstone"] = "靈魂石",
         ["Rebirth"] = "複生",
-        ["Pet Rez"] = "永恆守護者",
         
         --Utility CDs
         ["Tricks"] = "偷天換日",
@@ -359,12 +386,17 @@ if TehrsCDs["zhTW"].Translation_ChineseTraditional then
         ["Grip"] = "虔信之躍",
         ["Wind Rush"] = "風驟圖騰",
         ["Treants"] = "自然之力",        
+	["Shroud"] = "Shroud",
+	["L-Grip"] = "L-Grip",
+	["D-Grip"] = "D-Grip",
+	["D-Grip+"] = "D-Grip+",
+	["Shadowmeld"] = "Shadowmeld",		
         
         --Raid CDs
         ["Aura-M"] = "精通光環",
         ["Aegis"] = "聖光禦盾",
         ["VE"] = "吸血鬼的擁抱",
-		["VE+"] = "吸血鬼的擁抱+",
+	["VE+"] = "吸血鬼的擁抱+",
         ["Darkness"] = "黑暗",
         ["A-Prot"] = "先祖保護圖騰",
         ["D-Hymn"] = "神聖禮頌",
@@ -374,11 +406,17 @@ if TehrsCDs["zhTW"].Translation_ChineseTraditional then
         ["R-Cry"] = "命令之吼",
         ["H-Tide"] = "療癒之潮圖騰",
         ["Barrier"] = "真言術：壁",
-		["Barrier+"] = "真言術：壁+",
+	["Barrier+"] = "真言術：壁+",
         ["SLT"] = "靈魂鏈接圖騰",
         ["Revival"] = "五氣歸元",    
         ["Wings"] = "復仇之怒",     
         ["Wings+"] = "復仇之怒+",  		
+	["Ascendance"] = "Ascendance",
+	["Rapture"] = "Rapture",
+	["Salvation"] = "Salvation",
+	["Tree"] = "Tree",
+	["Apotheosis"] = "Apotheosis",
+	["Flourish"] = "Flourish",		
         
         --Externals
         ["Sac"] = "犧牲祝福",
